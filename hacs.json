@@ -1,10 +1,4 @@
 {
-    "name": "Integration blueprint",
-    "hacs": "1.6.0",
-    "domains": [
-        "binary_sensor",
-        "sensor",
-        "switch"
-    ],
-    "homeassistant": "0.118.0"
+    "name": "Technische Alternative C.M.I.",
+    "render_readme": true
 }

@@ -19,14 +19,6 @@ Issues not containing the minimum requirements will be closed:
 If you are unsure about the version check the const.py file.
 -->
 
-## Configuration
-
-```yaml
-
-Add your logs here.
-
-```
-
 ## Describe the bug
 A clear and concise description of what the bug is.
 

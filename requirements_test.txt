@@ -1,1 +1,7 @@
-pytest-homeassistant-custom-component==0.4.0
+ta-cmi==0.1.4
+
+#Test will fail witout
+aiohttp_cors
+
+pytest-homeassistant-custom-component==0.11.25
+
