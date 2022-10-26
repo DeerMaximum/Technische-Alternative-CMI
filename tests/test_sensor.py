@@ -69,9 +69,14 @@ ENTRY_DATA: dict[str, Any] = {
 
 async def test_sensors(hass: HomeAssistant) -> None:
     """Test the creation and values of the sensors."""
-    with patch("ta_cmi.baseApi.BaseAPI._makeRequestNoJson", return_value="2;",), patch(
-        "ta_cmi.baseApi.BaseAPI._makeRequest", return_value=DUMMY_DEVICE_API_DATA
-    ), patch("custom_components.ta_cmi.const.DEVICE_DELAY", 1), patch(
+    with patch(
+        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
+        return_value="2;",
+    ), patch(
+        "ta_cmi.baseApi.BaseAPI._make_request", return_value=DUMMY_DEVICE_API_DATA
+    ), patch(
+        "custom_components.ta_cmi.const.DEVICE_DELAY", 1
+    ), patch(
         "asyncio.sleep", wraps=sleep_mock
     ):
 
@@ -163,7 +168,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
 async def test_sensors_invalid_credentials(hass: HomeAssistant) -> None:
     """Test the creation and values of the sensors with invalid credentials."""
     with patch(
-        "ta_cmi.baseApi.BaseAPI._makeRequestNoJson",
+        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
         side_effect=InvalidCredentialsError("Invalid API key"),
     ), patch("asyncio.sleep", wraps=sleep_mock):
 
