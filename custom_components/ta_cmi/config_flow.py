@@ -133,9 +133,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         for dev in self.data["allDevices"]:
 
             if len(self.data["allDevices"]) > 1:
+                _LOGGER.debug("Sleep mode for 61 seconds to prevent rate limiting")
                 await asyncio.sleep(61)
 
             try:
+                _LOGGER.debug("Try to update device: %s", dev.id)
                 await dev.update()
             except ApiError as err:
                 if "Unknown" not in str(err):
@@ -150,6 +152,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "rate_limit"
             else:
                 if dev.getDeviceType() == "Unknown":
+                    _LOGGER.debug(
+                        "Ignore the device (%s) because the type is not compatible"
+                    )
                     continue
                 devices_list[
                     dev.id
