@@ -130,22 +130,30 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         devices_list: dict[int, str] = {}
 
-        try:
-            for dev in self.data["allDevices"]:
-                if len(self.data["allDevices"]) > 1:
-                    await asyncio.sleep(61)
+        for dev in self.data["allDevices"]:
+
+            if len(self.data["allDevices"]) > 1:
+                await asyncio.sleep(61)
+
+            try:
                 await dev.update()
+            except ApiError as err:
+                if "Unknown" not in str(err):
+                    errors["base"] = "device_error"
+                    _LOGGER.warning(
+                        "Error while communicating with a device (%s): %s", dev.id, err
+                    )
+                else:
+                    errors["base"] = "unknown"
+                    _LOGGER.exception("Unexpected exception: %s", err)
+            except RateLimitError:
+                errors["base"] = "rate_limit"
+            else:
                 if dev.getDeviceType() == "Unknown":
                     continue
                 devices_list[
                     dev.id
                 ] = f"Node {dev.id}: {dev.getDeviceType()} - Inputs: {len(dev.inputs)} Outputs: {len(dev.outputs)}"
-
-        except ApiError as err:
-            errors["base"] = "unknown"
-            _LOGGER.exception("Unexpected exception: %s", err)
-        except RateLimitError:
-            errors["base"] = "rate_limit"
 
         self.start_time = time.time()
         return self.async_show_form(

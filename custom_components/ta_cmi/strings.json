@@ -34,6 +34,7 @@
     "error": {
       "rate_limit": "C.M.I rate limit reached. Try again in one minute.",
       "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "device_error": "Error while communicating with a device. See logs for details.",
       "unknown": "[%key:common::config_flow::error::unknown%]",
       "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]"
     }
