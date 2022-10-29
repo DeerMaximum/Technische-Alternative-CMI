@@ -310,12 +310,29 @@ async def test_step_finish_dynamic_wait(hass: HomeAssistant) -> None:
         assert mock.call_count == 2
 
 
+async def test_step_device_communication_error(hass: HomeAssistant) -> None:
+    """Test the channel step with an communication error."""
+
+    with patch(
+        "ta_cmi.baseApi.BaseAPI._make_request",
+        side_effect=ApiError("Could not connect to C.M.I"),
+    ), patch("asyncio.sleep", wraps=sleep_mock):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": "devices"},
+        )
+
+    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+    assert result["step_id"] == "devices"
+    assert result["errors"] == {"base": "device_error"}
+
+
 async def test_step_device_unkown_error(hass: HomeAssistant) -> None:
     """Test the channel step with an unexpected error."""
 
     with patch(
         "ta_cmi.baseApi.BaseAPI._make_request",
-        side_effect=ApiError("Could not connect to C.M.I"),
+        side_effect=ApiError("Unknown error"),
     ), patch("asyncio.sleep", wraps=sleep_mock):
         result = await hass.config_entries.flow.async_init(
             DOMAIN,

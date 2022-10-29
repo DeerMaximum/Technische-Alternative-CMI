@@ -3,6 +3,7 @@
         "error": {
             "cannot_connect": "Failed to connect",
             "invalid_auth": "Invalid authentication",
+            "device_error": "Error while communicating with a device. See logs for details.",
             "rate_limit": "C.M.I rate limit reached. Try again in one minute.",
             "unknown": "Unexpected error"
         },
