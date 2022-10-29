@@ -18,6 +18,9 @@ Currently supported devices:
 - UVR610
 - UVR67
 
+> **Note**
+> The loading time of the integration is extended by one minute per configured node on the C.M.I. to avoid triggering the rate limit.
+
 {% if not installed %}
 ## Installation
 
