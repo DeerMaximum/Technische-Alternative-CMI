@@ -34,7 +34,7 @@
                     "host": "Base url of the C.M.I (http://IP)",
                     "password": "Password",
                     "username": "Username",
-                    "fetch_can_logging": "Setup CAN-Logging"
+                    "fetch_can_logging": "Use CAN-Logging for supported devices"
                 },
                 "title": "Set up C.M.I"
             }

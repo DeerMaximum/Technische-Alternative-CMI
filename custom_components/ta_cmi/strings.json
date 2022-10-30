@@ -7,7 +7,7 @@
           "host": "Base url of the C.M.I (http://IP)",
           "username": "Username",
           "password": "Password",
-          "fetch_can_logging": "Setup CAN-Logging"
+          "fetch_can_logging": "Use CAN-Logging for supported devices"
         }
       },
       "devices": {
