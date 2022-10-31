@@ -24,6 +24,7 @@ from .const import (
     CONF_DEVICE_FETCH_MODE,
     CONF_DEVICE_ID,
     CONF_DEVICES,
+    CONF_DEVICE_TYPE,
     DOMAIN,
     CONF_FETCH_CAN_LOGGING,
 )
@@ -114,7 +115,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             for dev_id in self.data[CONF_DEVICES]:
 
-                fetchmode: str
+                device_type: str = ""
+
+                for dev in self.data["allDevices"]:
+                    if dev.id == str(dev_id):
+                        device_type = dev.getDeviceType()
+
+                fetchmode: str = ""
                 if user_input[CONF_DEVICE_FETCH_MODE]:
                     fetchmode = "all"
                 else:
@@ -123,6 +130,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 device: dict[str, Any] = {
                     CONF_DEVICE_ID: dev_id,
                     CONF_DEVICE_FETCH_MODE: fetchmode,
+                    CONF_DEVICE_TYPE: device_type,
                     CONF_CHANNELS: [],
                 }
                 self.config[CONF_DEVICES].append(device)

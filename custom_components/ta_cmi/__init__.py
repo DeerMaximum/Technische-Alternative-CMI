@@ -30,9 +30,18 @@ from .const import (
     CONF_DEVICE_FETCH_MODE,
     CONF_DEVICE_ID,
     CONF_DEVICES,
+    CONF_DEVICE_TYPE,
     DEVICE_DELAY,
     DOMAIN,
     SCAN_INTERVAL,
+    TYPE_INPUT,
+    TYPE_OUTPUT,
+    TYPE_INPUT_BINARY,
+    TYPE_OUTPUT_BINARY,
+    TYPE_ANALOG_LOG,
+    TYPE_DIGITAL_LOG,
+    TYPE_ANALOG_LOG_BINARY,
+    TYPE_DIGITAL_LOG_BINARY,
 )
 
 PLATFORMS: list[str] = [Platform.SENSOR, Platform.BINARY_SENSOR]
@@ -82,6 +91,10 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
             device: Device = Device(
                 device_id, host, username, password, async_get_clientsession(hass)
             )
+
+            if CONF_DEVICE_TYPE in dev_raw:
+                device.set_device_type(dev_raw[CONF_DEVICE_TYPE])
+
             self.devices.append(device)
             self.devices_raw[device_id] = dev_raw
 
@@ -112,10 +125,14 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
 def _parse_data(device: Device, device_raw: dict[str, Any]) -> dict[str, Any]:
     """Parse data."""
     data: dict[str, Any] = {
-        "I": {},
-        "O": {},
-        "IB": {},
-        "OB": {},
+        TYPE_INPUT: {},
+        TYPE_OUTPUT: {},
+        TYPE_ANALOG_LOG: {},
+        TYPE_DIGITAL_LOG: {},
+        TYPE_INPUT_BINARY: {},
+        TYPE_OUTPUT_BINARY: {},
+        TYPE_ANALOG_LOG_BINARY: {},
+        TYPE_DIGITAL_LOG_BINARY: {},
         API_VERSION: device.apiVersion,
         DEVICE_TYPE: device.getDeviceType(),
     }
@@ -149,13 +166,13 @@ def _parse_data(device: Device, device_raw: dict[str, Any]) -> dict[str, Any]:
 
             value, unit = format_input(channel_input)
 
-            platform = "I"
+            platform = TYPE_INPUT
 
             if (
                 channel_input.getUnit() == "On/Off"
                 or channel_input.getUnit() == "No/Yes"
             ):
-                platform = "IB"
+                platform = TYPE_INPUT_BINARY
 
             data[platform][ch_id] = {
                 "channel": channel_input,
@@ -182,18 +199,90 @@ def _parse_data(device: Device, device_raw: dict[str, Any]) -> dict[str, Any]:
 
             value, unit = format_input(channel_output)
 
-            platform = "O"
+            platform = TYPE_OUTPUT
 
             if (
                 channel_output.getUnit() == "On/Off"
                 or channel_output.getUnit() == "No/Yes"
             ):
-                platform = "OB"
+                platform = TYPE_OUTPUT_BINARY
 
             data[platform][ch_id] = {
                 "channel": channel_output,
                 "value": value,
                 "mode": "Output",
+                "unit": unit,
+                "name": name,
+                "device_class": device_class,
+            }
+
+    for ch_id in device.analog_logging:
+        name = None
+        device_class = None
+
+        for i in channel_options:
+            if (
+                ch_id == i[CONF_CHANNELS_ID]
+                and i[CONF_CHANNELS_TYPE] == "analog logging"
+            ):
+                name = i[CONF_CHANNELS_NAME]
+                if len(i[CONF_CHANNELS_DEVICE_CLASS]) != 0:
+                    device_class = i[CONF_CHANNELS_DEVICE_CLASS]
+                break
+
+        if (name is not None and fetchmode == "defined") or fetchmode == "all":
+            channel_analog_logging: Channel = device.analog_logging[ch_id]
+
+            value, unit = format_input(channel_analog_logging)
+
+            platform = TYPE_ANALOG_LOG
+
+            if (
+                channel_analog_logging.getUnit() == "On/Off"
+                or channel_analog_logging.getUnit() == "No/Yes"
+            ):
+                platform = TYPE_ANALOG_LOG_BINARY
+
+            data[platform][ch_id] = {
+                "channel": channel_analog_logging,
+                "value": value,
+                "mode": "Analog-Logging",
+                "unit": unit,
+                "name": name,
+                "device_class": device_class,
+            }
+
+    for ch_id in device.digital_logging:
+        name = None
+        device_class = None
+
+        for i in channel_options:
+            if (
+                ch_id == i[CONF_CHANNELS_ID]
+                and i[CONF_CHANNELS_TYPE] == "digital logging"
+            ):
+                name = i[CONF_CHANNELS_NAME]
+                if len(i[CONF_CHANNELS_DEVICE_CLASS]) != 0:
+                    device_class = i[CONF_CHANNELS_DEVICE_CLASS]
+                break
+
+        if (name is not None and fetchmode == "defined") or fetchmode == "all":
+            channel_digital_logging: Channel = device.digital_logging[ch_id]
+
+            value, unit = format_input(channel_digital_logging)
+
+            platform = TYPE_DIGITAL_LOG
+
+            if (
+                channel_digital_logging.getUnit() == "On/Off"
+                or channel_digital_logging.getUnit() == "No/Yes"
+            ):
+                platform = TYPE_DIGITAL_LOG_BINARY
+
+            data[platform][ch_id] = {
+                "channel": channel_digital_logging,
+                "value": value,
+                "mode": "Digital-Logging",
                 "unit": unit,
                 "name": name,
                 "device_class": device_class,

@@ -30,6 +30,15 @@ DUMMY_DEVICE_API_DATA: dict[str, Any] = {
             {"Number": 4, "AD": "D", "Value": {"Value": 0, "Unit": "44"}},
             {"Number": 5, "AD": "D", "Value": {"Value": 0, "Unit": "1"}},
         ],
+        "Logging Analog": [
+            {"Number": 1, "AD": "A", "Value": {"Value": 12.2, "Unit": "1"}},
+            {"Number": 2, "AD": "A", "Value": {"Value": 67.3, "Unit": "1"}},
+            {"Number": 3, "AD": "D", "Value": {"Value": 1, "Unit": "43"}},
+        ],
+        "Logging Digital": [
+            {"Number": 1, "AD": "D", "Value": {"Value": 0, "Unit": "43"}},
+            {"Number": 2, "AD": "A", "Value": {"Value": 10, "Unit": "1"}},
+        ],
     },
     "Status": "OK",
     "Status code": 0,
@@ -43,6 +52,7 @@ ENTRY_DATA: dict[str, Any] = {
         {
             "id": "2",
             "fetchmode": "all",
+            "type": "UVR16x2",
             "channels": [
                 {
                     "type": "input",
@@ -55,6 +65,18 @@ ENTRY_DATA: dict[str, Any] = {
                     "id": 1,
                     "name": "Output 1",
                     "device_class": DEVICE_CLASS_GAS,
+                },
+                {
+                    "type": "analog logging",
+                    "id": 1,
+                    "name": "Analog 1",
+                    "device_class": DEVICE_CLASS_TEMPERATURE,
+                },
+                {
+                    "type": "digital logging",
+                    "id": 2,
+                    "name": "Digital 1",
+                    "device_class": DEVICE_CLASS_TEMPERATURE,
                 },
             ],
         },
@@ -70,8 +92,8 @@ ENTRY_DATA: dict[str, Any] = {
 async def test_sensors(hass: HomeAssistant) -> None:
     """Test the creation and values of the sensors."""
     with patch(
-        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
-        return_value="2;",
+            "ta_cmi.baseApi.BaseAPI._make_request_no_json",
+            return_value="2;",
     ), patch(
         "ta_cmi.baseApi.BaseAPI._make_request", return_value=DUMMY_DEVICE_API_DATA
     ), patch(
@@ -79,7 +101,6 @@ async def test_sensors(hass: HomeAssistant) -> None:
     ), patch(
         "asyncio.sleep", wraps=sleep_mock
     ):
-
         conf_entry: MockConfigEntry = MockConfigEntry(
             domain=DOMAIN, title="NINA", data=ENTRY_DATA
         )
@@ -164,14 +185,62 @@ async def test_sensors(hass: HomeAssistant) -> None:
 
         assert entry_o5.unique_id == "ta-cmi-2-Output5"
 
+        state_al1 = hass.states.get("sensor.analog_1")
+        entry_al1 = entity_registry.async_get("sensor.analog_1")
+
+        assert state_al1.state == "12.2"
+        assert state_al1.attributes.get("friendly_name") == "Analog 1"
+        assert state_al1.attributes.get("device_class") == DEVICE_CLASS_TEMPERATURE
+
+        assert entry_al1.unique_id == "ta-cmi-2-Analog-Logging1"
+
+        state_al2 = hass.states.get("sensor.node_2_analog_logging_2")
+        entry_al2 = entity_registry.async_get("sensor.node_2_analog_logging_2")
+
+        assert state_al2.state == "67.3"
+        assert state_al2.attributes.get("friendly_name") == "Node: 2 - Analog-Logging 2"
+        assert state_al2.attributes.get("device_class") == DEVICE_CLASS_TEMPERATURE
+
+        assert entry_al2.unique_id == "ta-cmi-2-Analog-Logging2"
+
+        state_al3 = hass.states.get("binary_sensor.node_2_analog_logging_3")
+        entry_al3 = entity_registry.async_get("binary_sensor.node_2_analog_logging_3")
+
+        assert state_al3.state == STATE_ON
+        assert state_al3.attributes.get("friendly_name") == "Node: 2 - Analog-Logging 3"
+        assert state_al3.attributes.get("device_class") == ""
+
+        assert entry_al3.unique_id == "ta-cmi-2-Analog-Logging3"
+
+        state_dl1 = hass.states.get("binary_sensor.node_2_digital_logging_1")
+        entry_dl1 = entity_registry.async_get("binary_sensor.node_2_digital_logging_1")
+
+        assert state_dl1.state == STATE_OFF
+        assert (
+                state_dl1.attributes.get("friendly_name") == "Node: 2 - Digital-Logging 1"
+        )
+        assert state_dl1.attributes.get("device_class") == ""
+
+        assert entry_dl1.unique_id == "ta-cmi-2-Digital-Logging1"
+
+        state_dl2 = hass.states.get("sensor.digital_1")
+        entry_dl2 = entity_registry.async_get("sensor.digital_1")
+
+        assert state_dl2.state == "10"
+        assert (
+                state_dl2.attributes.get("friendly_name") == "Digital 1"
+        )
+        assert state_dl2.attributes.get("device_class") == DEVICE_CLASS_TEMPERATURE
+
+        assert entry_dl2.unique_id == "ta-cmi-2-Digital-Logging2"
+
 
 async def test_sensors_invalid_credentials(hass: HomeAssistant) -> None:
     """Test the creation and values of the sensors with invalid credentials."""
     with patch(
-        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
-        side_effect=InvalidCredentialsError("Invalid API key"),
+            "ta_cmi.baseApi.BaseAPI._make_request_no_json",
+            side_effect=InvalidCredentialsError("Invalid API key"),
     ), patch("asyncio.sleep", wraps=sleep_mock):
-
         conf_entry: MockConfigEntry = MockConfigEntry(
             domain=DOMAIN, title="NINA", data=ENTRY_DATA
         )

@@ -245,7 +245,12 @@ async def test_step_devices_without_edit_fetch_all(hass: HomeAssistant) -> None:
 async def test_step_devices_without_edit_fetch_defined(hass: HomeAssistant) -> None:
     """Test the device step without edit channels and fetchmode defined."""
 
-    with patch("asyncio.sleep", wraps=sleep_mock):
+    dummy_device: Device = Device("2", "http://dummy", "", "")
+    DATA_OVERRIDE = {"allDevices": [dummy_device]}
+
+    with patch("asyncio.sleep", wraps=sleep_mock), patch.object(
+        ConfigFlow, "override_data", DATA_OVERRIDE
+    ):
 
         result = await hass.config_entries.flow.async_init(
             DOMAIN,
