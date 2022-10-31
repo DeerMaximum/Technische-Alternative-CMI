@@ -20,7 +20,16 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import CMIDataUpdateCoordinator
-from .const import API_VERSION, DEFAULT_DEVICE_CLASS_MAP, DEVICE_TYPE, DOMAIN
+from .const import (
+    API_VERSION,
+    DEFAULT_DEVICE_CLASS_MAP,
+    DEVICE_TYPE,
+    DOMAIN,
+    TYPE_INPUT,
+    TYPE_OUTPUT,
+    TYPE_ANALOG_LOG,
+    TYPE_DIGITAL_LOG,
+)
 
 
 async def async_setup_entry(
@@ -36,18 +45,32 @@ async def async_setup_entry(
     device_registry = dr.async_get(hass)
 
     for ent in coordinator.data:
-        inputs: dict = coordinator.data[ent]["I"]
-        outputs: dict = coordinator.data[ent]["O"]
+        inputs: dict = coordinator.data[ent][TYPE_INPUT]
+        outputs: dict = coordinator.data[ent][TYPE_OUTPUT]
+        analog_logging: dict = coordinator.data[ent][TYPE_ANALOG_LOG]
+        digital_logging: dict = coordinator.data[ent][TYPE_DIGITAL_LOG]
 
         for ch_id in inputs:
             channel_in: DeviceChannelSensor = DeviceChannelSensor(
-                coordinator, ent, ch_id, "I"
+                coordinator, ent, ch_id, TYPE_INPUT
             )
             entities.append(channel_in)
 
         for ch_id in outputs:
             channel_out: DeviceChannelSensor = DeviceChannelSensor(
-                coordinator, ent, ch_id, "O"
+                coordinator, ent, ch_id, TYPE_OUTPUT
+            )
+            entities.append(channel_out)
+
+        for ch_id in analog_logging:
+            channel_in: DeviceChannelSensor = DeviceChannelSensor(
+                coordinator, ent, ch_id, TYPE_ANALOG_LOG
+            )
+            entities.append(channel_in)
+
+        for ch_id in digital_logging:
+            channel_out: DeviceChannelSensor = DeviceChannelSensor(
+                coordinator, ent, ch_id, TYPE_DIGITAL_LOG
             )
             entities.append(channel_out)
 

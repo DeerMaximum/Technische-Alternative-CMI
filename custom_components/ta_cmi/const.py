@@ -14,15 +14,27 @@ DOMAIN: str = "ta_cmi"
 API_VERSION: str = "api_version"
 DEVICE_TYPE: str = "device_type"
 
+CONF_FETCH_CAN_LOGGING: str = "fetch_can_logging"
+
 CONF_DEVICES: str = "devices"
 CONF_DEVICE_ID: str = "id"
 CONF_DEVICE_FETCH_MODE: str = "fetchmode"
+CONF_DEVICE_TYPE: str = "type"
 
 CONF_CHANNELS: str = "channels"
 CONF_CHANNELS_TYPE: str = "type"
 CONF_CHANNELS_ID: str = "id"
 CONF_CHANNELS_NAME: str = "name"
 CONF_CHANNELS_DEVICE_CLASS: str = "device_class"
+
+TYPE_INPUT = "I"
+TYPE_OUTPUT = "O"
+TYPE_INPUT_BINARY = "IB"
+TYPE_OUTPUT_BINARY = "OB"
+TYPE_ANALOG_LOG = "AL"
+TYPE_DIGITAL_LOG = "DL"
+TYPE_ANALOG_LOG_BINARY = "ALB"
+TYPE_DIGITAL_LOG_BINARY = "DLB"
 
 DEFAULT_DEVICE_CLASS_MAP: dict[str, str] = {
     "°C": "temperature",

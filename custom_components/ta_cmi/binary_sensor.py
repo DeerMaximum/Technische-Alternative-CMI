@@ -20,7 +20,16 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import CMIDataUpdateCoordinator
-from .const import API_VERSION, DEFAULT_DEVICE_CLASS_MAP, DEVICE_TYPE, DOMAIN
+from .const import (
+    API_VERSION,
+    DEFAULT_DEVICE_CLASS_MAP,
+    DEVICE_TYPE,
+    DOMAIN,
+    TYPE_INPUT_BINARY,
+    TYPE_OUTPUT_BINARY,
+    TYPE_ANALOG_LOG_BINARY,
+    TYPE_DIGITAL_LOG_BINARY,
+)
 
 
 async def async_setup_entry(
@@ -36,18 +45,32 @@ async def async_setup_entry(
     device_registry = dr.async_get(hass)
 
     for ent in coordinator.data:
-        inputs: dict = coordinator.data[ent]["IB"]
-        outputs: dict = coordinator.data[ent]["OB"]
+        inputs: dict = coordinator.data[ent][TYPE_INPUT_BINARY]
+        outputs: dict = coordinator.data[ent][TYPE_OUTPUT_BINARY]
+        analog_logging: dict = coordinator.data[ent][TYPE_ANALOG_LOG_BINARY]
+        digital_logging: dict = coordinator.data[ent][TYPE_DIGITAL_LOG_BINARY]
 
         for ch_id in inputs:
             channel_in: DeviceChannelBinary = DeviceChannelBinary(
-                coordinator, ent, ch_id, "IB"
+                coordinator, ent, ch_id, TYPE_INPUT_BINARY
             )
             entities.append(channel_in)
 
         for ch_id in outputs:
             channel_out: DeviceChannelBinary = DeviceChannelBinary(
-                coordinator, ent, ch_id, "OB"
+                coordinator, ent, ch_id, TYPE_OUTPUT_BINARY
+            )
+            entities.append(channel_out)
+
+        for ch_id in analog_logging:
+            channel_out: DeviceChannelBinary = DeviceChannelBinary(
+                coordinator, ent, ch_id, TYPE_ANALOG_LOG_BINARY
+            )
+            entities.append(channel_out)
+
+        for ch_id in digital_logging:
+            channel_out: DeviceChannelBinary = DeviceChannelBinary(
+                coordinator, ent, ch_id, TYPE_DIGITAL_LOG_BINARY
             )
             entities.append(channel_out)
 
@@ -90,6 +113,7 @@ class DeviceChannelBinary(CoordinatorEntity, BinarySensorEntity):
 
         self._attr_name: str = name or f"Node: {self._node_id} - {mode} {self._id}"
         self._attr_unique_id: str = f"ta-cmi-{self._node_id}-{mode}{self._id}"
+        print(self._attr_name)
 
     @property
     def is_on(self) -> bool:
