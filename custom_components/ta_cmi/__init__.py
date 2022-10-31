@@ -73,12 +73,12 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
     """Class to manage fetching CMI data."""
 
     def __init__(
-        self,
-        hass: HomeAssistant,
-        host: str,
-        username: str,
-        password: str,
-        devices: Any,
+            self,
+            hass: HomeAssistant,
+            host: str,
+            username: str,
+            password: str,
+            devices: Any,
     ) -> None:
         """Initialize."""
         self.devices_raw: dict[str, Any] = {}
@@ -150,145 +150,58 @@ def _parse_data(device: Device, device_raw: dict[str, Any]) -> dict[str, Any]:
             }
         )
 
-    for ch_id in device.inputs:
-        name = None
-        device_class = None
-
-        for i in channel_options:
-            if ch_id == i[CONF_CHANNELS_ID] and i[CONF_CHANNELS_TYPE] == "input":
-                name = i[CONF_CHANNELS_NAME]
-                if len(i[CONF_CHANNELS_DEVICE_CLASS]) != 0:
-                    device_class = i[CONF_CHANNELS_DEVICE_CLASS]
-                break
-
-        if (name is not None and fetchmode == "defined") or fetchmode == "all":
-            channel_input: Channel = device.inputs[ch_id]
-
-            value, unit = format_input(channel_input)
-
-            platform = TYPE_INPUT
-
-            if (
-                channel_input.getUnit() == "On/Off"
-                or channel_input.getUnit() == "No/Yes"
-            ):
-                platform = TYPE_INPUT_BINARY
-
-            data[platform][ch_id] = {
-                "channel": channel_input,
-                "value": value,
-                "mode": "Input",
-                "unit": unit,
-                "name": name,
-                "device_class": device_class,
-            }
-
-    for ch_id in device.outputs:
-        name = None
-        device_class = None
-
-        for i in channel_options:
-            if ch_id == i[CONF_CHANNELS_ID] and i[CONF_CHANNELS_TYPE] == "output":
-                name = i[CONF_CHANNELS_NAME]
-                if len(i[CONF_CHANNELS_DEVICE_CLASS]) != 0:
-                    device_class = i[CONF_CHANNELS_DEVICE_CLASS]
-                break
-
-        if (name is not None and fetchmode == "defined") or fetchmode == "all":
-            channel_output: Channel = device.outputs[ch_id]
-
-            value, unit = format_input(channel_output)
-
-            platform = TYPE_OUTPUT
-
-            if (
-                channel_output.getUnit() == "On/Off"
-                or channel_output.getUnit() == "No/Yes"
-            ):
-                platform = TYPE_OUTPUT_BINARY
-
-            data[platform][ch_id] = {
-                "channel": channel_output,
-                "value": value,
-                "mode": "Output",
-                "unit": unit,
-                "name": name,
-                "device_class": device_class,
-            }
-
-    for ch_id in device.analog_logging:
-        name = None
-        device_class = None
-
-        for i in channel_options:
-            if (
-                ch_id == i[CONF_CHANNELS_ID]
-                and i[CONF_CHANNELS_TYPE] == "analog logging"
-            ):
-                name = i[CONF_CHANNELS_NAME]
-                if len(i[CONF_CHANNELS_DEVICE_CLASS]) != 0:
-                    device_class = i[CONF_CHANNELS_DEVICE_CLASS]
-                break
-
-        if (name is not None and fetchmode == "defined") or fetchmode == "all":
-            channel_analog_logging: Channel = device.analog_logging[ch_id]
-
-            value, unit = format_input(channel_analog_logging)
-
-            platform = TYPE_ANALOG_LOG
-
-            if (
-                channel_analog_logging.getUnit() == "On/Off"
-                or channel_analog_logging.getUnit() == "No/Yes"
-            ):
-                platform = TYPE_ANALOG_LOG_BINARY
-
-            data[platform][ch_id] = {
-                "channel": channel_analog_logging,
-                "value": value,
-                "mode": "Analog-Logging",
-                "unit": unit,
-                "name": name,
-                "device_class": device_class,
-            }
-
-    for ch_id in device.digital_logging:
-        name = None
-        device_class = None
-
-        for i in channel_options:
-            if (
-                ch_id == i[CONF_CHANNELS_ID]
-                and i[CONF_CHANNELS_TYPE] == "digital logging"
-            ):
-                name = i[CONF_CHANNELS_NAME]
-                if len(i[CONF_CHANNELS_DEVICE_CLASS]) != 0:
-                    device_class = i[CONF_CHANNELS_DEVICE_CLASS]
-                break
-
-        if (name is not None and fetchmode == "defined") or fetchmode == "all":
-            channel_digital_logging: Channel = device.digital_logging[ch_id]
-
-            value, unit = format_input(channel_digital_logging)
-
-            platform = TYPE_DIGITAL_LOG
-
-            if (
-                channel_digital_logging.getUnit() == "On/Off"
-                or channel_digital_logging.getUnit() == "No/Yes"
-            ):
-                platform = TYPE_DIGITAL_LOG_BINARY
-
-            data[platform][ch_id] = {
-                "channel": channel_digital_logging,
-                "value": value,
-                "mode": "Digital-Logging",
-                "unit": unit,
-                "name": name,
-                "device_class": device_class,
-            }
+    data = _parse_channel(data, device.inputs, "input", "Input", channel_options, fetchmode, TYPE_INPUT,
+                          TYPE_INPUT_BINARY)
+    data = _parse_channel(data, device.outputs, "output", "Output", channel_options, fetchmode, TYPE_OUTPUT,
+                          TYPE_OUTPUT_BINARY)
+    data = _parse_channel(data, device.analog_logging, "analog logging", "Analog-Logging", channel_options,
+                          fetchmode, TYPE_ANALOG_LOG, TYPE_ANALOG_LOG_BINARY)
+    data = _parse_channel(data, device.digital_logging, "digital logging", "Digital-Logging", channel_options,
+                          fetchmode, TYPE_DIGITAL_LOG, TYPE_DIGITAL_LOG_BINARY)
 
     return data
+
+
+def _parse_channel(base_data: dict[str, Any], target_channels: dict[int, Channel], channel_type: str,
+                   channel_type_full: str,
+                   all_channel_options: list, fetchmode: str, channel_sensor: str, channel_bin_sensor: str):
+    for channel_id in target_channels:
+        name = None
+        device_class = None
+
+        for i in all_channel_options:
+            if (
+                    channel_id == i[CONF_CHANNELS_ID]
+                    and i[CONF_CHANNELS_TYPE] == channel_type
+            ):
+                name = i[CONF_CHANNELS_NAME]
+                if len(i[CONF_CHANNELS_DEVICE_CLASS]) != 0:
+                    device_class = i[CONF_CHANNELS_DEVICE_CLASS]
+                break
+
+        if (name is not None and fetchmode == "defined") or fetchmode == "all":
+            channel: Channel = target_channels[channel_id]
+
+            value, unit = format_input(channel)
+
+            channel_platform = channel_sensor
+
+            if (
+                    channel.getUnit() == "On/Off"
+                    or channel.getUnit() == "No/Yes"
+            ):
+                channel_platform = channel_bin_sensor
+
+            base_data[channel_platform][channel_id] = {
+                "channel": channel,
+                "value": value,
+                "mode": channel_type_full,
+                "unit": unit,
+                "name": name,
+                "device_class": device_class,
+            }
+
+    return base_data
 
 
 def format_input(channel: Channel) -> tuple[str, str]:
@@ -310,4 +223,4 @@ def format_input(channel: Channel) -> tuple[str, str]:
         else:
             value = "no"
 
-    return (value, unit)
+    return value, unit
