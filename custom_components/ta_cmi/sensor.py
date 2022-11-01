@@ -11,6 +11,7 @@ from homeassistant.const import (
     ATTR_MODEL,
     ATTR_NAME,
     ATTR_SW_VERSION,
+    CONF_API_VERSION,
     CONF_HOST,
 )
 from homeassistant.core import HomeAssistant
@@ -21,14 +22,13 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import CMIDataUpdateCoordinator
 from .const import (
-    API_VERSION,
     DEFAULT_DEVICE_CLASS_MAP,
     DEVICE_TYPE,
     DOMAIN,
-    TYPE_INPUT,
-    TYPE_OUTPUT,
     TYPE_ANALOG_LOG,
     TYPE_DIGITAL_LOG,
+    TYPE_INPUT,
+    TYPE_OUTPUT,
 )
 
 
@@ -80,7 +80,7 @@ async def async_setup_entry(
             manufacturer="Technische Alternative",
             name=coordinator.data[ent][DEVICE_TYPE],
             model=coordinator.data[ent][DEVICE_TYPE],
-            sw_version=coordinator.data[ent][API_VERSION],
+            sw_version=coordinator.data[ent][CONF_API_VERSION],
             configuration_url=coordinator.data[ent][CONF_HOST],
         )
 
@@ -113,6 +113,7 @@ class DeviceChannelSensor(CoordinatorEntity, SensorEntity):
 
         self._attr_name: str = name or f"Node: {self._node_id} - {mode} {self._id}"
         self._attr_unique_id: str = f"ta-cmi-{self._node_id}-{mode}{self._id}"
+        print(self._attr_name)
 
     @property
     def native_value(self) -> str:
@@ -146,7 +147,7 @@ class DeviceChannelSensor(CoordinatorEntity, SensorEntity):
     def device_info(self) -> DeviceInfo:
         """Return device information."""
 
-        device_api_type: str = self._coordinator.data[self._node_id][API_VERSION]
+        device_api_type: str = self._coordinator.data[self._node_id][CONF_API_VERSION]
         device_name: str = self._coordinator.data[self._node_id][DEVICE_TYPE]
 
         return {
