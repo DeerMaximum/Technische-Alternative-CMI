@@ -5,8 +5,6 @@ import asyncio
 from typing import Any
 
 from async_timeout import timeout
-from ta_cmi import ApiError, Channel, Device, InvalidCredentialsError, RateLimitError
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_HOST,
@@ -19,6 +17,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from ta_cmi import ApiError, Channel, Device, InvalidCredentialsError, RateLimitError
 
 from .const import (
     _LOGGER,
@@ -29,25 +28,23 @@ from .const import (
     CONF_CHANNELS_TYPE,
     CONF_DEVICE_FETCH_MODE,
     CONF_DEVICE_ID,
-    CONF_DEVICES,
     CONF_DEVICE_TYPE,
+    CONF_DEVICES,
     DEVICE_DELAY,
     DOMAIN,
     SCAN_INTERVAL,
-    TYPE_INPUT,
-    TYPE_OUTPUT,
-    TYPE_INPUT_BINARY,
-    TYPE_OUTPUT_BINARY,
     TYPE_ANALOG_LOG,
-    TYPE_DIGITAL_LOG,
     TYPE_ANALOG_LOG_BINARY,
+    TYPE_DIGITAL_LOG,
     TYPE_DIGITAL_LOG_BINARY,
+    TYPE_INPUT,
+    TYPE_INPUT_BINARY,
+    TYPE_OUTPUT,
+    TYPE_OUTPUT_BINARY,
 )
+from .device_parser import DeviceParser
 
 PLATFORMS: list[str] = [Platform.SENSOR, Platform.BINARY_SENSOR]
-
-API_VERSION: str = "api_version"
-DEVICE_TYPE: str = "device_type"
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -108,9 +105,9 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
                 async with timeout(10):
                     await device.update()
 
-                return_data[device.id] = _parse_data(
-                    device, self.devices_raw[device.id]
-                )
+                parser: DeviceParser = DeviceParser(device, self.devices_raw[device.id])
+
+                return_data[device.id] = parser.parse()
 
                 return_data[device.id][CONF_HOST] = self.host
 
@@ -120,107 +117,3 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
             return return_data
         except (InvalidCredentialsError, RateLimitError, ApiError) as err:
             raise UpdateFailed(err) from err
-
-
-def _parse_data(device: Device, device_raw: dict[str, Any]) -> dict[str, Any]:
-    """Parse data."""
-    data: dict[str, Any] = {
-        TYPE_INPUT: {},
-        TYPE_OUTPUT: {},
-        TYPE_ANALOG_LOG: {},
-        TYPE_DIGITAL_LOG: {},
-        TYPE_INPUT_BINARY: {},
-        TYPE_OUTPUT_BINARY: {},
-        TYPE_ANALOG_LOG_BINARY: {},
-        TYPE_DIGITAL_LOG_BINARY: {},
-        API_VERSION: device.apiVersion,
-        DEVICE_TYPE: device.getDeviceType(),
-    }
-
-    fetchmode: str = device_raw[CONF_DEVICE_FETCH_MODE]
-    channel_options: list = []
-
-    for channel in device_raw[CONF_CHANNELS]:
-        channel_options.append(
-            {
-                CONF_CHANNELS_ID: channel[CONF_CHANNELS_ID],
-                CONF_CHANNELS_TYPE: channel[CONF_CHANNELS_TYPE],
-                CONF_CHANNELS_NAME: channel[CONF_CHANNELS_NAME],
-                CONF_CHANNELS_DEVICE_CLASS: channel[CONF_CHANNELS_DEVICE_CLASS],
-            }
-        )
-
-    data = _parse_channel(data, device.inputs, "input", "Input", channel_options, fetchmode, TYPE_INPUT,
-                          TYPE_INPUT_BINARY)
-    data = _parse_channel(data, device.outputs, "output", "Output", channel_options, fetchmode, TYPE_OUTPUT,
-                          TYPE_OUTPUT_BINARY)
-    data = _parse_channel(data, device.analog_logging, "analog logging", "Analog-Logging", channel_options,
-                          fetchmode, TYPE_ANALOG_LOG, TYPE_ANALOG_LOG_BINARY)
-    data = _parse_channel(data, device.digital_logging, "digital logging", "Digital-Logging", channel_options,
-                          fetchmode, TYPE_DIGITAL_LOG, TYPE_DIGITAL_LOG_BINARY)
-
-    return data
-
-
-def _parse_channel(base_data: dict[str, Any], target_channels: dict[int, Channel], channel_type: str,
-                   channel_type_full: str,
-                   all_channel_options: list, fetchmode: str, channel_sensor: str, channel_bin_sensor: str):
-    for channel_id in target_channels:
-        name = None
-        device_class = None
-
-        for i in all_channel_options:
-            if (
-                    channel_id == i[CONF_CHANNELS_ID]
-                    and i[CONF_CHANNELS_TYPE] == channel_type
-            ):
-                name = i[CONF_CHANNELS_NAME]
-                if len(i[CONF_CHANNELS_DEVICE_CLASS]) != 0:
-                    device_class = i[CONF_CHANNELS_DEVICE_CLASS]
-                break
-
-        if (name is not None and fetchmode == "defined") or fetchmode == "all":
-            channel: Channel = target_channels[channel_id]
-
-            value, unit = format_input(channel)
-
-            channel_platform = channel_sensor
-
-            if (
-                    channel.getUnit() == "On/Off"
-                    or channel.getUnit() == "No/Yes"
-            ):
-                channel_platform = channel_bin_sensor
-
-            base_data[channel_platform][channel_id] = {
-                "channel": channel,
-                "value": value,
-                "mode": channel_type_full,
-                "unit": unit,
-                "name": name,
-                "device_class": device_class,
-            }
-
-    return base_data
-
-
-def format_input(channel: Channel) -> tuple[str, str]:
-    """Format the unit and value."""
-    unit: str = channel.getUnit()
-    value: str = channel.value
-
-    if unit == "On/Off":
-        unit = ""
-        if bool(value):
-            value = STATE_ON
-        else:
-            value = STATE_OFF
-
-    if unit == "No/Yes":
-        unit = ""
-        if bool(value):
-            value = "yes"
-        else:
-            value = "no"
-
-    return value, unit

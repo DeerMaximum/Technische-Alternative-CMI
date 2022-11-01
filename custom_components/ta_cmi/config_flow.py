@@ -5,14 +5,13 @@ import asyncio
 import time
 from typing import Any
 
-from ta_cmi import CMI, ApiError, InvalidCredentialsError, RateLimitError
-import voluptuous as vol
-
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 import homeassistant.helpers.config_validation as cv
+from ta_cmi import CMI, ApiError, InvalidCredentialsError, RateLimitError
+import voluptuous as vol
 
 from .const import (
     _LOGGER,
@@ -23,10 +22,10 @@ from .const import (
     CONF_CHANNELS_TYPE,
     CONF_DEVICE_FETCH_MODE,
     CONF_DEVICE_ID,
-    CONF_DEVICES,
     CONF_DEVICE_TYPE,
-    DOMAIN,
+    CONF_DEVICES,
     CONF_FETCH_CAN_LOGGING,
+    DOMAIN,
 )
 
 
