@@ -113,7 +113,6 @@ class DeviceChannelSensor(CoordinatorEntity, SensorEntity):
 
         self._attr_name: str = name or f"Node: {self._node_id} - {mode} {self._id}"
         self._attr_unique_id: str = f"ta-cmi-{self._node_id}-{mode}{self._id}"
-        print(self._attr_name)
 
     @property
     def native_value(self) -> str:

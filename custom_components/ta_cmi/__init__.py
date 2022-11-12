@@ -10,37 +10,21 @@ from homeassistant.const import (
     CONF_HOST,
     CONF_PASSWORD,
     CONF_USERNAME,
-    STATE_OFF,
-    STATE_ON,
     Platform,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from ta_cmi import ApiError, Channel, Device, InvalidCredentialsError, RateLimitError
+from ta_cmi import ApiError, Device, InvalidCredentialsError, RateLimitError
 
 from .const import (
     _LOGGER,
-    CONF_CHANNELS,
-    CONF_CHANNELS_DEVICE_CLASS,
-    CONF_CHANNELS_ID,
-    CONF_CHANNELS_NAME,
-    CONF_CHANNELS_TYPE,
-    CONF_DEVICE_FETCH_MODE,
     CONF_DEVICE_ID,
     CONF_DEVICE_TYPE,
     CONF_DEVICES,
     DEVICE_DELAY,
     DOMAIN,
     SCAN_INTERVAL,
-    TYPE_ANALOG_LOG,
-    TYPE_ANALOG_LOG_BINARY,
-    TYPE_DIGITAL_LOG,
-    TYPE_DIGITAL_LOG_BINARY,
-    TYPE_INPUT,
-    TYPE_INPUT_BINARY,
-    TYPE_OUTPUT,
-    TYPE_OUTPUT_BINARY,
 )
 from .device_parser import DeviceParser
 
