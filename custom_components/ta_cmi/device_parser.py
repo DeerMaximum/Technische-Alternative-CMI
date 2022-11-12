@@ -92,7 +92,7 @@ class DeviceParser:
         return name, device_class
 
     @staticmethod
-    def _format_input(self, target_channel: Channel) -> tuple[str, str]:
+    def _format_input(target_channel: Channel) -> tuple[str, str]:
         """Format the unit and value."""
         unit: str = target_channel.getUnit()
         value: str = target_channel.value
@@ -133,7 +133,7 @@ class DeviceParser:
 
             channel: Channel = target_channels[channel_id]
 
-            value, unit = self._format_input(self=self, target_channel=channel)
+            value, unit = self._format_input(target_channel=channel)
 
             channel_platform = channel_type_sensor
 
