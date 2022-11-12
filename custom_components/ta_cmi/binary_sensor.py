@@ -113,7 +113,6 @@ class DeviceChannelBinary(CoordinatorEntity, BinarySensorEntity):
 
         self._attr_name: str = name or f"Node: {self._node_id} - {mode} {self._id}"
         self._attr_unique_id: str = f"ta-cmi-{self._node_id}-{mode}{self._id}"
-        print(self._attr_name)
 
     @property
     def is_on(self) -> bool:

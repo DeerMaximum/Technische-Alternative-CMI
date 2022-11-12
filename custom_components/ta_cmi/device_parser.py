@@ -56,7 +56,6 @@ class DeviceParser:
         data = self._parse_channels(data, self.device.digital_logging, "digital logging", TYPE_DIGITAL_LOG,
                                     TYPE_DIGITAL_LOG_BINARY)
 
-        print(data)
         return data
 
     def _parse_channel_options(self) -> list:
