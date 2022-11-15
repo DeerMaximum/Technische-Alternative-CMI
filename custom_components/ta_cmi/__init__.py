@@ -54,12 +54,12 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
     """Class to manage fetching CMI data."""
 
     def __init__(
-            self,
-            hass: HomeAssistant,
-            host: str,
-            username: str,
-            password: str,
-            devices: Any,
+        self,
+        hass: HomeAssistant,
+        host: str,
+        username: str,
+        password: str,
+        devices: Any,
     ) -> None:
         """Initialize."""
         self.devices_raw: dict[str, Any] = {}
@@ -86,6 +86,8 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
         try:
             return_data: dict[str, Any] = {}
             for device in self.devices:
+                _LOGGER.debug("Try to update device: %s", device.id)
+
                 async with timeout(10):
                     await device.update()
 
@@ -96,6 +98,7 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
                 return_data[device.id][CONF_HOST] = self.host
 
                 if len(self.devices) != 1:
+                    _LOGGER.debug("Wait for 61 seconds to prevent rate limiting")
                     await asyncio.sleep(DEVICE_DELAY)
 
             return return_data

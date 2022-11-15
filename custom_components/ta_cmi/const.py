@@ -6,7 +6,7 @@ from logging import Logger, getLogger
 
 _LOGGER: Logger = getLogger(__package__)
 
-SCAN_INTERVAL: timedelta = timedelta(minutes=5)
+SCAN_INTERVAL: timedelta = timedelta(minutes=10)
 DEVICE_DELAY: int = 61
 
 DOMAIN: str = "ta_cmi"
