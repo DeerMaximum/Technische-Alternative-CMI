@@ -4,6 +4,8 @@
 
 This integration monitors the inputs and outputs of the devices connected to a C.M.I. from [Technische Alternative](https://www.ta.co.at/). It creates a separate (binary) sensor for each input and output which displays the current values.
 
+The data is fetched every 10 minutes.
+
 Currently supported devices:
 
 - UVR1611
