@@ -151,7 +151,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.debug("Try to update device: %s", dev.id)
                 await dev.update()
 
-                if self.fetch_can_logging and dev.getDeviceType().endswith("x2"):
+                if self.fetch_can_logging and (
+                    dev.getDeviceType().endswith("x2")
+                    or dev.getDeviceType() == "RSM610"
+                ):
                     _LOGGER.debug("Sleep mode for 61 seconds to prevent rate limiting")
                     await asyncio.sleep(61)
                     _LOGGER.debug("Try to update device: %s", dev.id)

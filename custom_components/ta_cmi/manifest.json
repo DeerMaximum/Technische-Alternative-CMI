@@ -4,7 +4,7 @@
     "config_flow": true,
     "documentation": "https://github.com/DeerMaximum/Technische-Alternative-CMI",
     "issue_tracker": "https://github.com/DeerMaximum/Technische-Alternative-CMI/issues",
-    "requirements": ["ta-cmi==0.2.0"],
+    "requirements": ["ta-cmi==0.3.0"],
     "dependencies": [],
     "codeowners": ["@DeerMaximum"],
     "iot_class": "local_polling",

@@ -20,6 +20,8 @@ from .const import (
     TYPE_INPUT_BINARY,
     TYPE_OUTPUT,
     TYPE_OUTPUT_BINARY,
+    TYPE_DL_BUS,
+    TYPE_DL_BUS_BINARY,
 )
 
 
@@ -41,20 +43,39 @@ class DeviceParser:
             TYPE_OUTPUT: {},
             TYPE_ANALOG_LOG: {},
             TYPE_DIGITAL_LOG: {},
+            TYPE_DL_BUS: {},
             TYPE_INPUT_BINARY: {},
             TYPE_OUTPUT_BINARY: {},
             TYPE_ANALOG_LOG_BINARY: {},
             TYPE_DIGITAL_LOG_BINARY: {},
+            TYPE_DL_BUS_BINARY: {},
             CONF_API_VERSION: self.device.apiVersion,
             DEVICE_TYPE: self.device.getDeviceType(),
         }
 
-        data = self._parse_channels(data, self.device.inputs, "input", TYPE_INPUT, TYPE_INPUT_BINARY)
-        data = self._parse_channels(data, self.device.outputs, "output", TYPE_OUTPUT, TYPE_OUTPUT_BINARY)
-        data = self._parse_channels(data, self.device.analog_logging, "analog logging", TYPE_ANALOG_LOG,
-                                    TYPE_ANALOG_LOG_BINARY)
-        data = self._parse_channels(data, self.device.digital_logging, "digital logging", TYPE_DIGITAL_LOG,
-                                    TYPE_DIGITAL_LOG_BINARY)
+        data = self._parse_channels(
+            data, self.device.inputs, "input", TYPE_INPUT, TYPE_INPUT_BINARY
+        )
+        data = self._parse_channels(
+            data, self.device.outputs, "output", TYPE_OUTPUT, TYPE_OUTPUT_BINARY
+        )
+        data = self._parse_channels(
+            data,
+            self.device.analog_logging,
+            "analog logging",
+            TYPE_ANALOG_LOG,
+            TYPE_ANALOG_LOG_BINARY,
+        )
+        data = self._parse_channels(
+            data,
+            self.device.digital_logging,
+            "digital logging",
+            TYPE_DIGITAL_LOG,
+            TYPE_DIGITAL_LOG_BINARY,
+        )
+        data = self._parse_channels(
+            data, self.device.dl_bus, "dl-bus", TYPE_DL_BUS, TYPE_DL_BUS_BINARY
+        )
 
         return data
 
@@ -74,15 +95,17 @@ class DeviceParser:
 
         return options
 
-    def _get_channel_customization(self, channel_id: int, channel_type: str) -> tuple[str | None, str | None]:
+    def _get_channel_customization(
+        self, channel_id: int, channel_type: str
+    ) -> tuple[str | None, str | None]:
         """Get the channel customization."""
         name = None
         device_class = None
 
         for i in self.channel_options:
             if (
-                    channel_id == i[CONF_CHANNELS_ID]
-                    and i[CONF_CHANNELS_TYPE] == channel_type
+                channel_id == i[CONF_CHANNELS_ID]
+                and i[CONF_CHANNELS_TYPE] == channel_type
             ):
                 name = i[CONF_CHANNELS_NAME]
                 if len(i[CONF_CHANNELS_DEVICE_CLASS]) != 0:
@@ -121,14 +144,25 @@ class DeviceParser:
     def _format_channel_type(channel_type: str) -> str:
         return channel_type.title().replace(" ", "-")
 
-    def _parse_channels(self, base_data: dict[str, Any], target_channels: dict[int, Channel], channel_type: str,
-                        channel_type_sensor: str, channel_type_bin_sensor: str) -> dict[str, Any]:
+    def _parse_channels(
+        self,
+        base_data: dict[str, Any],
+        target_channels: dict[int, Channel],
+        channel_type: str,
+        channel_type_sensor: str,
+        channel_type_bin_sensor: str,
+    ) -> dict[str, Any]:
 
         """Parse a channel type."""
         for channel_id in target_channels:
-            name, device_class = self._get_channel_customization(channel_id, channel_type)
+            name, device_class = self._get_channel_customization(
+                channel_id, channel_type
+            )
 
-            if not ((name is not None and self.fetch_mode == "defined") or self.fetch_mode == "all"):
+            if not (
+                (name is not None and self.fetch_mode == "defined")
+                or self.fetch_mode == "all"
+            ):
                 continue
 
             channel: Channel = target_channels[channel_id]

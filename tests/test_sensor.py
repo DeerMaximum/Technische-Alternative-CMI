@@ -39,6 +39,10 @@ DUMMY_DEVICE_API_DATA: dict[str, Any] = {
             {"Number": 1, "AD": "D", "Value": {"Value": 0, "Unit": "43"}},
             {"Number": 2, "AD": "A", "Value": {"Value": 10, "Unit": "1"}},
         ],
+        "DL-Bus": [
+            {"Number": 1, "AD": "D", "Value": {"Value": 0, "Unit": "43"}},
+            {"Number": 2, "AD": "A", "Value": {"Value": 10, "Unit": "1"}},
+        ],
     },
     "Status": "OK",
     "Status code": 0,
@@ -78,6 +82,12 @@ ENTRY_DATA: dict[str, Any] = {
                     "name": "Digital 1",
                     "device_class": DEVICE_CLASS_TEMPERATURE,
                 },
+                {
+                    "type": "dl-bus",
+                    "id": 2,
+                    "name": "DL-Bus 1",
+                    "device_class": DEVICE_CLASS_TEMPERATURE,
+                },
             ],
         },
         {
@@ -92,8 +102,8 @@ ENTRY_DATA: dict[str, Any] = {
 async def test_sensors(hass: HomeAssistant) -> None:
     """Test the creation and values of the sensors."""
     with patch(
-            "ta_cmi.baseApi.BaseAPI._make_request_no_json",
-            return_value="2;",
+        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
+        return_value="2;",
     ), patch(
         "ta_cmi.baseApi.BaseAPI._make_request", return_value=DUMMY_DEVICE_API_DATA
     ), patch(
@@ -217,7 +227,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
 
         assert state_dl1.state == STATE_OFF
         assert (
-                state_dl1.attributes.get("friendly_name") == "Node: 2 - Digital-Logging 1"
+            state_dl1.attributes.get("friendly_name") == "Node: 2 - Digital-Logging 1"
         )
         assert state_dl1.attributes.get("device_class") == ""
 
@@ -227,19 +237,35 @@ async def test_sensors(hass: HomeAssistant) -> None:
         entry_dl2 = entity_registry.async_get("sensor.digital_1")
 
         assert state_dl2.state == "10"
-        assert (
-                state_dl2.attributes.get("friendly_name") == "Digital 1"
-        )
+        assert state_dl2.attributes.get("friendly_name") == "Digital 1"
         assert state_dl2.attributes.get("device_class") == DEVICE_CLASS_TEMPERATURE
 
         assert entry_dl2.unique_id == "ta-cmi-2-Digital-Logging2"
+
+        state_dl_bus1 = hass.states.get("binary_sensor.node_2_dl_bus_1")
+        entry_dl_bus1 = entity_registry.async_get("binary_sensor.node_2_dl_bus_1")
+
+        assert state_dl_bus1.state == STATE_OFF
+        assert state_dl_bus1.attributes.get("friendly_name") == "Node: 2 - Dl-Bus 1"
+        assert state_dl_bus1.attributes.get("device_class") == ""
+
+        assert entry_dl_bus1.unique_id == "ta-cmi-2-Dl-Bus1"
+
+        state_dl_bus2 = hass.states.get("sensor.dl_bus_1")
+        entry_dl_bus2 = entity_registry.async_get("sensor.dl_bus_1")
+
+        assert state_dl_bus2.state == "10"
+        assert state_dl_bus2.attributes.get("friendly_name") == "DL-Bus 1"
+        assert state_dl_bus2.attributes.get("device_class") == DEVICE_CLASS_TEMPERATURE
+
+        assert entry_dl_bus2.unique_id == "ta-cmi-2-Dl-Bus2"
 
 
 async def test_sensors_invalid_credentials(hass: HomeAssistant) -> None:
     """Test the creation and values of the sensors with invalid credentials."""
     with patch(
-            "ta_cmi.baseApi.BaseAPI._make_request_no_json",
-            side_effect=InvalidCredentialsError("Invalid API key"),
+        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
+        side_effect=InvalidCredentialsError("Invalid API key"),
     ), patch("asyncio.sleep", wraps=sleep_mock):
         conf_entry: MockConfigEntry = MockConfigEntry(
             domain=DOMAIN, title="NINA", data=ENTRY_DATA
