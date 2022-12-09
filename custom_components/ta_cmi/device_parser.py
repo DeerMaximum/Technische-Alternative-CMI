@@ -1,4 +1,5 @@
 """Parser to parse device data."""
+from __future__ import annotations
 from typing import Any
 
 from homeassistant.const import CONF_API_VERSION, STATE_OFF, STATE_ON
