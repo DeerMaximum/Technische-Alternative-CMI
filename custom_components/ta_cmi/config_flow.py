@@ -5,11 +5,14 @@ import asyncio
 import time
 from typing import Any
 
+from aiohttp import ClientSession
+
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from ta_cmi import CMI, ApiError, InvalidCredentialsError, RateLimitError
 import voluptuous as vol
 
@@ -29,10 +32,12 @@ from .const import (
 )
 
 
-async def validate_login(data: dict[str, Any]) -> Any:
+async def validate_login(data: dict[str, Any], session: ClientSession) -> Any:
     """Validate the user input allows us to connect."""
     try:
-        cmi: CMI = CMI(data[CONF_HOST], data[CONF_USERNAME], data[CONF_PASSWORD])
+        cmi: CMI = CMI(
+            data[CONF_HOST], data[CONF_USERNAME], data[CONF_PASSWORD], session
+        )
         return await cmi.getDevices()
     except InvalidCredentialsError as err:
         raise InvalidAuth from err
@@ -72,7 +77,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self.data["allDevices"] = {}
 
             try:
-                self.data["allDevices"] = await validate_login(user_input)
+                self.data["allDevices"] = await validate_login(
+                    user_input, async_get_clientsession(self.hass)
+                )
             except CannotConnect:
                 errors["base"] = "cannot_connect"
             except InvalidAuth:
@@ -151,7 +158,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.debug("Try to update device: %s", dev.id)
                 await dev.update()
 
-                if self.fetch_can_logging and dev.getDeviceType().endswith("x2"):
+                if self.fetch_can_logging and (
+                    dev.getDeviceType().endswith("x2")
+                    or dev.getDeviceType() == "RSM610"
+                ):
                     _LOGGER.debug("Sleep mode for 61 seconds to prevent rate limiting")
                     await asyncio.sleep(61)
                     _LOGGER.debug("Try to update device: %s", dev.id)

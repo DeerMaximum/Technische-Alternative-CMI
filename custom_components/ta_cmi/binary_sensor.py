@@ -29,6 +29,7 @@ from .const import (
     TYPE_DIGITAL_LOG_BINARY,
     TYPE_INPUT_BINARY,
     TYPE_OUTPUT_BINARY,
+    TYPE_DL_BUS_BINARY,
 )
 
 
@@ -49,6 +50,7 @@ async def async_setup_entry(
         outputs: dict = coordinator.data[ent][TYPE_OUTPUT_BINARY]
         analog_logging: dict = coordinator.data[ent][TYPE_ANALOG_LOG_BINARY]
         digital_logging: dict = coordinator.data[ent][TYPE_DIGITAL_LOG_BINARY]
+        dl_bus: dict = coordinator.data[ent][TYPE_DL_BUS_BINARY]
 
         for ch_id in inputs:
             channel_in: DeviceChannelBinary = DeviceChannelBinary(
@@ -71,6 +73,12 @@ async def async_setup_entry(
         for ch_id in digital_logging:
             channel_out: DeviceChannelBinary = DeviceChannelBinary(
                 coordinator, ent, ch_id, TYPE_DIGITAL_LOG_BINARY
+            )
+            entities.append(channel_out)
+
+        for ch_id in dl_bus:
+            channel_out: DeviceChannelBinary = DeviceChannelBinary(
+                coordinator, ent, ch_id, TYPE_DL_BUS_BINARY
             )
             entities.append(channel_out)
 
