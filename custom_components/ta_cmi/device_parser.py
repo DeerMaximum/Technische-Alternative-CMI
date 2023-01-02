@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from homeassistant.const import CONF_API_VERSION, STATE_OFF, STATE_ON
-from ta_cmi import Channel, Device
+from ta_cmi import Channel, Device, ChannelType
 
 from .const import (
     CONF_CHANNELS,
@@ -50,32 +50,44 @@ class DeviceParser:
             TYPE_ANALOG_LOG_BINARY: {},
             TYPE_DIGITAL_LOG_BINARY: {},
             TYPE_DL_BUS_BINARY: {},
-            CONF_API_VERSION: self.device.apiVersion,
-            DEVICE_TYPE: self.device.getDeviceType(),
+            CONF_API_VERSION: self.device.api_version,
+            DEVICE_TYPE: self.device.get_device_type(),
         }
 
         data = self._parse_channels(
-            data, self.device.inputs, "input", TYPE_INPUT, TYPE_INPUT_BINARY
-        )
-        data = self._parse_channels(
-            data, self.device.outputs, "output", TYPE_OUTPUT, TYPE_OUTPUT_BINARY
+            data,
+            self.device.get_channels(ChannelType.INPUT),
+            "input",
+            TYPE_INPUT,
+            TYPE_INPUT_BINARY,
         )
         data = self._parse_channels(
             data,
-            self.device.analog_logging,
+            self.device.get_channels(ChannelType.OUTPUT),
+            "output",
+            TYPE_OUTPUT,
+            TYPE_OUTPUT_BINARY,
+        )
+        data = self._parse_channels(
+            data,
+            self.device.get_channels(ChannelType.ANALOG_LOGGING),
             "analog logging",
             TYPE_ANALOG_LOG,
             TYPE_ANALOG_LOG_BINARY,
         )
         data = self._parse_channels(
             data,
-            self.device.digital_logging,
+            self.device.get_channels(ChannelType.DIGITAL_LOGGING),
             "digital logging",
             TYPE_DIGITAL_LOG,
             TYPE_DIGITAL_LOG_BINARY,
         )
         data = self._parse_channels(
-            data, self.device.dl_bus, "dl-bus", TYPE_DL_BUS, TYPE_DL_BUS_BINARY
+            data,
+            self.device.get_channels(ChannelType.DL_BUS),
+            "dl-bus",
+            TYPE_DL_BUS,
+            TYPE_DL_BUS_BINARY,
         )
 
         return data
@@ -118,7 +130,7 @@ class DeviceParser:
     @staticmethod
     def _format_input(target_channel: Channel) -> tuple[str, str]:
         """Format the unit and value."""
-        unit: str = target_channel.getUnit()
+        unit: str = target_channel.get_unit()
         value: str = target_channel.value
 
         if unit == "On/Off":
@@ -139,7 +151,7 @@ class DeviceParser:
 
     @staticmethod
     def _is_channel_binary(channel: Channel) -> bool:
-        return channel.getUnit() == "On/Off" or channel.getUnit() == "No/Yes"
+        return channel.get_unit() == "On/Off" or channel.get_unit() == "No/Yes"
 
     @staticmethod
     def _format_channel_type(channel_type: str) -> str:
