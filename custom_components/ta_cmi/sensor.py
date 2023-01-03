@@ -20,16 +20,14 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from ta_cmi import ChannelType
+
 from . import CMIDataUpdateCoordinator
 from .const import (
     DEFAULT_DEVICE_CLASS_MAP,
     DEVICE_TYPE,
+    TYPE_SENSOR,
     DOMAIN,
-    TYPE_ANALOG_LOG,
-    TYPE_DIGITAL_LOG,
-    TYPE_INPUT,
-    TYPE_OUTPUT,
-    TYPE_DL_BUS,
 )
 
 
@@ -46,41 +44,18 @@ async def async_setup_entry(
     device_registry = dr.async_get(hass)
 
     for ent in coordinator.data:
-        inputs: dict = coordinator.data[ent][TYPE_INPUT]
-        outputs: dict = coordinator.data[ent][TYPE_OUTPUT]
-        analog_logging: dict = coordinator.data[ent][TYPE_ANALOG_LOG]
-        digital_logging: dict = coordinator.data[ent][TYPE_DIGITAL_LOG]
-        dl_bus: dict = coordinator.data[ent][TYPE_DL_BUS]
 
-        for ch_id in inputs:
-            channel_in: DeviceChannelSensor = DeviceChannelSensor(
-                coordinator, ent, ch_id, TYPE_INPUT
-            )
-            entities.append(channel_in)
+        for channel_type in ChannelType:
+            if coordinator.data[ent][TYPE_SENSOR].get(channel_type.name, None) is None:
+                continue
 
-        for ch_id in outputs:
-            channel_out: DeviceChannelSensor = DeviceChannelSensor(
-                coordinator, ent, ch_id, TYPE_OUTPUT
-            )
-            entities.append(channel_out)
+            available_channels = coordinator.data[ent][TYPE_SENSOR][channel_type.name]
+            for ch_id in available_channels:
+                channel: DeviceChannelSensor = DeviceChannelSensor(
+                    coordinator, ent, ch_id, channel_type.name
+                )
 
-        for ch_id in analog_logging:
-            channel_in: DeviceChannelSensor = DeviceChannelSensor(
-                coordinator, ent, ch_id, TYPE_ANALOG_LOG
-            )
-            entities.append(channel_in)
-
-        for ch_id in digital_logging:
-            channel_out: DeviceChannelSensor = DeviceChannelSensor(
-                coordinator, ent, ch_id, TYPE_DIGITAL_LOG
-            )
-            entities.append(channel_out)
-
-        for ch_id in dl_bus:
-            channel_out: DeviceChannelSensor = DeviceChannelSensor(
-                coordinator, ent, ch_id, TYPE_DL_BUS
-            )
-            entities.append(channel_out)
+                entities.append(channel)
 
         device_registry.async_get_or_create(
             config_entry_id=config_entry.entry_id,
@@ -103,7 +78,7 @@ class DeviceChannelSensor(CoordinatorEntity, SensorEntity):
         coordinator: CMIDataUpdateCoordinator,
         node_id: str,
         channel_id: str,
-        input_type: str,
+        input_type: ChannelType,
     ) -> None:
         """Initialize."""
         super().__init__(coordinator)
@@ -113,8 +88,8 @@ class DeviceChannelSensor(CoordinatorEntity, SensorEntity):
         self._coordinator = coordinator
 
         channel_raw: dict[str, Any] = self._coordinator.data[self._node_id][
-            self._input_type
-        ][self._id]
+            TYPE_SENSOR
+        ][self._input_type][self._id]
 
         name: str = channel_raw["name"]
         mode: str = channel_raw["mode"]
@@ -126,8 +101,8 @@ class DeviceChannelSensor(CoordinatorEntity, SensorEntity):
     def native_value(self) -> str:
         """Return the state of the sensor."""
         channel_raw: dict[str, Any] = self._coordinator.data[self._node_id][
-            self._input_type
-        ][self._id]
+            TYPE_SENSOR
+        ][self._input_type][self._id]
 
         value: str = channel_raw["value"]
 
@@ -138,8 +113,8 @@ class DeviceChannelSensor(CoordinatorEntity, SensorEntity):
         """Return the unit of measurement of this entity, if any."""
 
         channel_raw: dict[str, Any] = self._coordinator.data[self._node_id][
-            self._input_type
-        ][self._id]
+            TYPE_SENSOR
+        ][self._input_type][self._id]
 
         unit: str = channel_raw["unit"]
 
@@ -169,8 +144,8 @@ class DeviceChannelSensor(CoordinatorEntity, SensorEntity):
     def device_class(self) -> str:
         """Return the device class of this entity, if any."""
         channel_raw: dict[str, Any] = self._coordinator.data[self._node_id][
-            self._input_type
-        ][self._id]
+            TYPE_SENSOR
+        ][self._input_type][self._id]
 
         device_class: str = channel_raw["device_class"]
 

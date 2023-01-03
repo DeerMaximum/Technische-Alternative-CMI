@@ -34,6 +34,7 @@ from .const import (
     CONF_DEVICE_TYPE,
     CONF_DEVICES,
     CONF_FETCH_CAN_LOGGING,
+    DEVICE_TYPE_STRING_MAP,
     DOMAIN,
 )
 
@@ -205,6 +206,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
+    def _generate_channel_types(self) -> list[str]:
+        """Generate a list of available channel types"""
+        return [x.title() for x in DEVICE_TYPE_STRING_MAP.values()]
+
     async def async_step_channel(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
@@ -239,18 +244,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     devices_list[dev.id] = str(dev)
                     break
 
-        available_channel_types = ["Input", "Output"]
-
-        if self.fetch_can_logging:
-            available_channel_types += ["Analog Logging", "Digital Logging"]
-
         return self.async_show_form(
             step_id="channel",
             data_schema=vol.Schema(
                 {
                     vol.Required("node"): vol.In(devices_list),
                     vol.Required(CONF_CHANNELS_ID): cv.positive_int,
-                    vol.Required(CONF_CHANNELS_TYPE): vol.In(available_channel_types),
+                    vol.Required(CONF_CHANNELS_TYPE): vol.In(
+                        self._generate_channel_types()
+                    ),
                     vol.Required(CONF_CHANNELS_NAME): cv.string,
                     vol.Optional(CONF_CHANNELS_DEVICE_CLASS, default=""): cv.string,
                     vol.Optional("edit_more_channels", default=True): cv.boolean,

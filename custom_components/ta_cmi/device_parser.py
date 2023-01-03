@@ -12,17 +12,10 @@ from .const import (
     CONF_CHANNELS_NAME,
     CONF_CHANNELS_TYPE,
     CONF_DEVICE_FETCH_MODE,
+    TYPE_BINARY,
+    TYPE_SENSOR,
     DEVICE_TYPE,
-    TYPE_ANALOG_LOG,
-    TYPE_ANALOG_LOG_BINARY,
-    TYPE_DIGITAL_LOG,
-    TYPE_DIGITAL_LOG_BINARY,
-    TYPE_INPUT,
-    TYPE_INPUT_BINARY,
-    TYPE_OUTPUT,
-    TYPE_OUTPUT_BINARY,
-    TYPE_DL_BUS,
-    TYPE_DL_BUS_BINARY,
+    DEVICE_TYPE_STRING_MAP,
 )
 
 
@@ -40,55 +33,19 @@ class DeviceParser:
     def parse(self) -> dict[str, Any]:
         """Parse the device."""
         data: dict[str, Any] = {
-            TYPE_INPUT: {},
-            TYPE_OUTPUT: {},
-            TYPE_ANALOG_LOG: {},
-            TYPE_DIGITAL_LOG: {},
-            TYPE_DL_BUS: {},
-            TYPE_INPUT_BINARY: {},
-            TYPE_OUTPUT_BINARY: {},
-            TYPE_ANALOG_LOG_BINARY: {},
-            TYPE_DIGITAL_LOG_BINARY: {},
-            TYPE_DL_BUS_BINARY: {},
+            TYPE_BINARY: {},
+            TYPE_SENSOR: {},
             CONF_API_VERSION: self.device.api_version,
             DEVICE_TYPE: self.device.get_device_type(),
         }
 
-        data = self._parse_channels(
-            data,
-            self.device.get_channels(ChannelType.INPUT),
-            "input",
-            TYPE_INPUT,
-            TYPE_INPUT_BINARY,
-        )
-        data = self._parse_channels(
-            data,
-            self.device.get_channels(ChannelType.OUTPUT),
-            "output",
-            TYPE_OUTPUT,
-            TYPE_OUTPUT_BINARY,
-        )
-        data = self._parse_channels(
-            data,
-            self.device.get_channels(ChannelType.ANALOG_LOGGING),
-            "analog logging",
-            TYPE_ANALOG_LOG,
-            TYPE_ANALOG_LOG_BINARY,
-        )
-        data = self._parse_channels(
-            data,
-            self.device.get_channels(ChannelType.DIGITAL_LOGGING),
-            "digital logging",
-            TYPE_DIGITAL_LOG,
-            TYPE_DIGITAL_LOG_BINARY,
-        )
-        data = self._parse_channels(
-            data,
-            self.device.get_channels(ChannelType.DL_BUS),
-            "dl-bus",
-            TYPE_DL_BUS,
-            TYPE_DL_BUS_BINARY,
-        )
+        for channel_type in ChannelType:
+            if not self.device.has_channel_type(channel_type):
+                continue
+
+            data = self._parse_channels(
+                data, self.device.get_channels(channel_type), channel_type
+            )
 
         return data
 
@@ -109,17 +66,16 @@ class DeviceParser:
         return options
 
     def _get_channel_customization(
-        self, channel_id: int, channel_type: str
+        self, channel_id: int, channel_type: ChannelType
     ) -> tuple[str | None, str | None]:
         """Get the channel customization."""
         name = None
         device_class = None
 
         for i in self.channel_options:
-            if (
-                channel_id == i[CONF_CHANNELS_ID]
-                and i[CONF_CHANNELS_TYPE] == channel_type
-            ):
+            if channel_id == i[CONF_CHANNELS_ID] and i[
+                CONF_CHANNELS_TYPE
+            ] == DEVICE_TYPE_STRING_MAP.get(channel_type, ""):
                 name = i[CONF_CHANNELS_NAME]
                 if len(i[CONF_CHANNELS_DEVICE_CLASS]) != 0:
                     device_class = i[CONF_CHANNELS_DEVICE_CLASS]
@@ -154,19 +110,21 @@ class DeviceParser:
         return channel.get_unit() == "On/Off" or channel.get_unit() == "No/Yes"
 
     @staticmethod
-    def _format_channel_type(channel_type: str) -> str:
-        return channel_type.title().replace(" ", "-")
+    def _format_channel_type(channel_type: ChannelType) -> str:
+        type_string: str = DEVICE_TYPE_STRING_MAP.get(channel_type, "")
+        return type_string.title().replace(" ", "-")
 
     def _parse_channels(
         self,
         base_data: dict[str, Any],
         target_channels: dict[int, Channel],
-        channel_type: str,
-        channel_type_sensor: str,
-        channel_type_bin_sensor: str,
+        channel_type: ChannelType,
     ) -> dict[str, Any]:
-
         """Parse a channel type."""
+
+        # Dict structure
+        # SENSOR_TYPE CHANNEL_TYPE CHANNEL_ID
+
         for channel_id in target_channels:
             name, device_class = self._get_channel_customization(
                 channel_id, channel_type
@@ -182,12 +140,15 @@ class DeviceParser:
 
             value, unit = self._format_input(target_channel=channel)
 
-            channel_platform = channel_type_sensor
+            sensor_type: str = TYPE_SENSOR
 
             if self._is_channel_binary(channel):
-                channel_platform = channel_type_bin_sensor
+                sensor_type: str = TYPE_BINARY
 
-            base_data[channel_platform][channel_id] = {
+            if base_data[sensor_type].get(channel_type.name, None) is None:
+                base_data[sensor_type][channel_type.name] = {}
+
+            base_data[sensor_type][channel_type.name][channel_id] = {
                 "channel": channel,
                 "value": value,
                 "mode": self._format_channel_type(channel_type),
