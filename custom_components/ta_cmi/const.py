@@ -4,6 +4,8 @@ from __future__ import annotations
 from datetime import timedelta
 from logging import Logger, getLogger
 
+from ta_cmi import ChannelType
+
 _LOGGER: Logger = getLogger(__package__)
 
 SCAN_INTERVAL: timedelta = timedelta(minutes=10)
@@ -26,17 +28,6 @@ CONF_CHANNELS_ID: str = "id"
 CONF_CHANNELS_NAME: str = "name"
 CONF_CHANNELS_DEVICE_CLASS: str = "device_class"
 
-TYPE_INPUT = "I"
-TYPE_OUTPUT = "O"
-TYPE_INPUT_BINARY = "IB"
-TYPE_OUTPUT_BINARY = "OB"
-TYPE_ANALOG_LOG = "AL"
-TYPE_DIGITAL_LOG = "DL"
-TYPE_ANALOG_LOG_BINARY = "ALB"
-TYPE_DIGITAL_LOG_BINARY = "DLB"
-TYPE_DL_BUS = "DL-B"
-TYPE_DL_BUS_BINARY = "DL-BB"
-
 DEFAULT_DEVICE_CLASS_MAP: dict[str, str] = {
     "°C": "temperature",
     "K": "temperature",
@@ -48,4 +39,25 @@ DEFAULT_DEVICE_CLASS_MAP: dict[str, str] = {
     "W": "power",
     "mbar": "pressure",
     "V": "voltage",
+}
+
+TYPE_BINARY = "binary"
+TYPE_SENSOR = "sensor"
+
+DEVICE_TYPE_STRING_MAP: dict[ChannelType, str] = {
+    ChannelType.INPUT: "input",
+    ChannelType.OUTPUT: "output",
+    ChannelType.DL_BUS: "dl-bus",
+    ChannelType.SYSTEM_VALUES_GENERAL: "system general",
+    ChannelType.SYSTEM_VALUES_DATE: "system date",
+    ChannelType.SYSTEM_VALUES_TIME: "system time",
+    ChannelType.SYSTEM_VALUES_SUN: "system sun",
+    ChannelType.SYSTEM_VALUES_E_POWER: "electrical power",
+    ChannelType.NETWORK_ANALOG: "network analog",
+    ChannelType.NETWORK_DIGITAL: "network digital",
+    ChannelType.MBUS: "mbus",
+    ChannelType.MODBUS: "modbus",
+    ChannelType.KNX: "knx",
+    ChannelType.ANALOG_LOGGING: "analog logging",
+    ChannelType.DIGITAL_LOGGING: "digital logging",
 }

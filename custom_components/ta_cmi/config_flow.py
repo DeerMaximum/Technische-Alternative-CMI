@@ -13,7 +13,13 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from ta_cmi import CMI, ApiError, InvalidCredentialsError, RateLimitError
+from ta_cmi import (
+    CMI,
+    ApiError,
+    InvalidCredentialsError,
+    RateLimitError,
+    InvalidDeviceError,
+)
 import voluptuous as vol
 
 from .const import (
@@ -28,6 +34,7 @@ from .const import (
     CONF_DEVICE_TYPE,
     CONF_DEVICES,
     CONF_FETCH_CAN_LOGGING,
+    DEVICE_TYPE_STRING_MAP,
     DOMAIN,
 )
 
@@ -38,7 +45,7 @@ async def validate_login(data: dict[str, Any], session: ClientSession) -> Any:
         cmi: CMI = CMI(
             data[CONF_HOST], data[CONF_USERNAME], data[CONF_PASSWORD], session
         )
-        return await cmi.getDevices()
+        return await cmi.get_devices()
     except InvalidCredentialsError as err:
         raise InvalidAuth from err
     except ApiError as err:
@@ -102,7 +109,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Required(CONF_HOST): cv.string,
                     vol.Required(CONF_USERNAME): cv.string,
                     vol.Required(CONF_PASSWORD): cv.string,
-                    vol.Required(CONF_FETCH_CAN_LOGGING, default=False): cv.boolean,
+                    vol.Required(CONF_FETCH_CAN_LOGGING, default=True): cv.boolean,
                 }
             ),
             errors=errors,
@@ -125,7 +132,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 for dev in self.data["allDevices"]:
                     if dev.id == str(dev_id):
-                        device_type = dev.getDeviceType()
+                        device_type = dev.get_device_type()
 
                 fetchmode: str = ""
                 if user_input[CONF_DEVICE_FETCH_MODE]:
@@ -155,17 +162,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await asyncio.sleep(61)
 
             try:
-                _LOGGER.debug("Try to update device: %s", dev.id)
-                await dev.update()
-
-                if self.fetch_can_logging and (
-                    dev.getDeviceType().endswith("x2")
-                    or dev.getDeviceType() == "RSM610"
-                ):
+                if self.fetch_can_logging:
+                    _LOGGER.debug("Try to fetch device type: %s", dev.id)
+                    await dev.fetch_type()
                     _LOGGER.debug("Sleep mode for 61 seconds to prevent rate limiting")
                     await asyncio.sleep(61)
-                    _LOGGER.debug("Try to update device: %s", dev.id)
-                    await dev.update()
+
+                _LOGGER.debug("Try to fetch available device channels: %s", dev.id)
+                await dev.update()
 
             except ApiError as err:
                 if "Unknown" not in str(err):
@@ -178,8 +182,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     _LOGGER.exception("Unexpected exception: %s", err)
             except RateLimitError:
                 errors["base"] = "rate_limit"
+            except InvalidDeviceError:
+                errors["base"] = "invalid_device"
+                _LOGGER.warning("Invalid device: %s", dev.id)
             else:
-                if dev.getDeviceType() == "Unknown":
+                if dev.get_device_type() == "Unknown":
                     _LOGGER.debug(
                         "Ignore the device (%s) because the type is not compatible"
                     )
@@ -198,6 +205,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             ),
             errors=errors,
         )
+
+    def _generate_channel_types(self) -> list[str]:
+        """Generate a list of available channel types"""
+        return [x.title() for x in DEVICE_TYPE_STRING_MAP.values()]
 
     async def async_step_channel(
         self, user_input: dict[str, Any] | None = None
@@ -233,18 +244,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     devices_list[dev.id] = str(dev)
                     break
 
-        available_channel_types = ["Input", "Output"]
-
-        if self.fetch_can_logging:
-            available_channel_types += ["Analog Logging", "Digital Logging"]
-
         return self.async_show_form(
             step_id="channel",
             data_schema=vol.Schema(
                 {
                     vol.Required("node"): vol.In(devices_list),
                     vol.Required(CONF_CHANNELS_ID): cv.positive_int,
-                    vol.Required(CONF_CHANNELS_TYPE): vol.In(available_channel_types),
+                    vol.Required(CONF_CHANNELS_TYPE): vol.In(
+                        self._generate_channel_types()
+                    ),
                     vol.Required(CONF_CHANNELS_NAME): cv.string,
                     vol.Optional(CONF_CHANNELS_DEVICE_CLASS, default=""): cv.string,
                     vol.Optional("edit_more_channels", default=True): cv.boolean,

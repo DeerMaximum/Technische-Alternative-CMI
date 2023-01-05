@@ -224,7 +224,7 @@ async def test_step_user_unkown_device(hass: HomeAssistant) -> None:
 
         assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
         assert result["step_id"] == "devices"
-        assert result["errors"] == {}
+        assert result["errors"] == {"base": "invalid_device"}
 
 
 async def test_step_devices_without_edit_fetch_all(hass: HomeAssistant) -> None:
@@ -306,7 +306,7 @@ async def test_step_devices_with_multiple_devices(hass: HomeAssistant) -> None:
 
         assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
         assert result["step_id"] == "devices"
-        assert result["errors"] == {}
+        assert result["errors"] == {"base": "invalid_device"}
 
 
 async def test_step_devices_with_edit(hass: HomeAssistant) -> None:
