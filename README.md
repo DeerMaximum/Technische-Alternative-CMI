@@ -22,6 +22,7 @@ Currently supported devices:
 
 > **Note**
 > The loading time of the integration is extended by one minute per configured node on the C.M.I. to avoid triggering the rate limit.
+> The same applies to the setup process
 
 {% if not installed %}
 ## Installation
