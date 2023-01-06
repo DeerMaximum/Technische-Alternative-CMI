@@ -15,8 +15,6 @@ DOMAIN: str = "ta_cmi"
 
 DEVICE_TYPE: str = "device_type"
 
-CONF_FETCH_CAN_LOGGING: str = "fetch_can_logging"
-
 CONF_DEVICES: str = "devices"
 CONF_DEVICE_ID: str = "id"
 CONF_DEVICE_FETCH_MODE: str = "fetchmode"
