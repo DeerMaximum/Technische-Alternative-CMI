@@ -21,7 +21,6 @@ from custom_components.ta_cmi.const import (
     CONF_DEVICE_FETCH_MODE,
     CONF_DEVICES,
     DOMAIN,
-    CONF_FETCH_CAN_LOGGING,
 )
 
 from . import sleep_mock
@@ -30,14 +29,12 @@ DUMMY_CONNECTION_DATA: dict[str, Any] = {
     CONF_HOST: "http://1.2.3.4",
     CONF_USERNAME: "username",
     CONF_PASSWORD: "password",
-    CONF_FETCH_CAN_LOGGING: False,
 }
 
 DUMMY_CONNECTION_DATA_ONLY_IP: dict[str, Any] = {
     CONF_HOST: "1.2.3.4",
     CONF_USERNAME: "username",
     CONF_PASSWORD: "password",
-    CONF_FETCH_CAN_LOGGING: False,
 }
 
 DUMMY_DEVICE_DATA_NO_CHANNEL_FETCH_ALL = {
@@ -90,7 +87,7 @@ DUMMY_DEVICE_API_DATA: dict[str, Any] = {
 }
 
 DUMMY_DEVICE_API_DATA_UNKOWN_DEVICE: dict[str, Any] = {
-    "Header": {"Version": 5, "Device": "0", "Timestamp": 1630764000},
+    "Header": {"Version": 5, "Device": "44", "Timestamp": 1630764000},
     "Data": {
         "Inputs": [
             {"Number": 1, "AD": "A", "Value": {"Value": 92.2, "Unit": "1"}},
@@ -176,11 +173,15 @@ async def test_step_user(hass: HomeAssistant) -> None:
         return_value="2;",
     ), patch(
         "ta_cmi.baseApi.BaseAPI._make_request", return_value=DUMMY_DEVICE_API_DATA
-    ):
+    ), patch(
+        "asyncio.sleep", wraps=sleep_mock
+    ) as sleep_m:
 
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": SOURCE_USER}, data=DUMMY_CONNECTION_DATA
         )
+
+        sleep_m.assert_called_once()
 
         assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
         assert result["step_id"] == "devices"
@@ -194,11 +195,15 @@ async def test_step_user_only_ip(hass: HomeAssistant) -> None:
         return_value="2;",
     ), patch(
         "ta_cmi.baseApi.BaseAPI._make_request", return_value=DUMMY_DEVICE_API_DATA
-    ):
+    ), patch(
+        "asyncio.sleep", wraps=sleep_mock
+    ) as sleep_m:
 
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": SOURCE_USER}, data=DUMMY_CONNECTION_DATA_ONLY_IP
         )
+
+        sleep_m.assert_called_once()
 
         assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
         assert result["step_id"] == "devices"
@@ -260,31 +265,6 @@ async def test_step_devices_without_edit_fetch_defined(hass: HomeAssistant) -> N
 
         assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
         assert result["title"] == "C.M.I"
-
-
-async def test_step_device_with_can_logging(hass: HomeAssistant) -> None:
-    """Test the device step with can logging if a second update is made on devices ending with x2."""
-
-    dummy_device: Device = Device("2", "http://dummy", "", "")
-    DATA_OVERRIDE = {"allDevices": [dummy_device]}
-
-    with patch("asyncio.sleep", wraps=sleep_mock) as sleep_m, patch(
-        "ta_cmi.baseApi.BaseAPI._make_request",
-        return_value=DUMMY_DEVICE_API_DATA,
-    ), patch.object(ConfigFlow, "init_fetch_can_logging", True), patch.object(
-        ConfigFlow, "override_data", DATA_OVERRIDE
-    ):
-
-        result = await hass.config_entries.flow.async_init(
-            DOMAIN,
-            context={"source": "devices"},
-        )
-
-        sleep_m.assert_called_once()
-
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
-        assert result["step_id"] == "devices"
-        assert result["errors"] == {}
 
 
 async def test_step_devices_with_multiple_devices(hass: HomeAssistant) -> None:
@@ -418,33 +398,6 @@ async def test_step_channels_edit_only_one(hass: HomeAssistant) -> None:
 
         assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
         assert result["title"] == "C.M.I"
-
-
-async def test_step_channel_edit_with_can_logging(hass: HomeAssistant) -> None:
-    """Test the channel step with can logging enabled and extended channel types."""
-    dummy_device: Device = Device("2", "", "", "")
-
-    DATA_OVERRIDE = {"allDevices": [dummy_device], CONF_DEVICES: ["2"]}
-
-    CONFIG_OVERRIDE = {
-        CONF_DEVICES: [
-            {CONF_CHANNELS_ID: "2", CONF_DEVICE_FETCH_MODE: "all", CONF_CHANNELS: []}
-        ]
-    }
-
-    with patch.object(ConfigFlow, "override_data", DATA_OVERRIDE), patch.object(
-        ConfigFlow, "override_config", CONFIG_OVERRIDE
-    ), patch("asyncio.sleep", wraps=sleep_mock), patch.object(
-        ConfigFlow, "init_fetch_can_logging", True
-    ):
-        result = await hass.config_entries.flow.async_init(
-            DOMAIN,
-            context={"source": "channel"},
-        )
-
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
-        assert result["step_id"] == "channel"
-        assert result["errors"] == {}
 
 
 async def test_step_channels_edit_more(hass: HomeAssistant) -> None:

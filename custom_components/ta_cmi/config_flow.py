@@ -33,7 +33,6 @@ from .const import (
     CONF_DEVICE_ID,
     CONF_DEVICE_TYPE,
     CONF_DEVICES,
-    CONF_FETCH_CAN_LOGGING,
     DEVICE_TYPE_STRING_MAP,
     DOMAIN,
 )
@@ -59,7 +58,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     override_data: dict[str, Any] = {}
     override_config: dict[str, Any] = {}
     init_start_time: float = 0
-    init_fetch_can_logging: bool = False
 
     def __init__(self) -> None:
         """Initialize."""
@@ -68,7 +66,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.config: dict[str, Any] = ConfigFlow.override_config
 
         self.start_time: float = ConfigFlow.init_start_time
-        self.fetch_can_logging: bool = ConfigFlow.init_fetch_can_logging
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -99,7 +96,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self.config[CONF_USERNAME] = user_input[CONF_USERNAME]
                 self.config[CONF_PASSWORD] = user_input[CONF_PASSWORD]
                 self.config[CONF_DEVICES] = []
-                self.fetch_can_logging = user_input[CONF_FETCH_CAN_LOGGING]
                 return await self.async_step_devices()
 
         return self.async_show_form(
@@ -109,7 +105,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Required(CONF_HOST): cv.string,
                     vol.Required(CONF_USERNAME): cv.string,
                     vol.Required(CONF_PASSWORD): cv.string,
-                    vol.Required(CONF_FETCH_CAN_LOGGING, default=True): cv.boolean,
                 }
             ),
             errors=errors,
@@ -162,11 +157,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await asyncio.sleep(61)
 
             try:
-                if self.fetch_can_logging:
-                    _LOGGER.debug("Try to fetch device type: %s", dev.id)
-                    await dev.fetch_type()
-                    _LOGGER.debug("Sleep mode for 61 seconds to prevent rate limiting")
-                    await asyncio.sleep(61)
+
+                _LOGGER.debug("Try to fetch device type: %s", dev.id)
+                await dev.fetch_type()
+                _LOGGER.debug("Sleep mode for 61 seconds to prevent rate limiting")
+                await asyncio.sleep(61)
 
                 _LOGGER.debug("Try to fetch available device channels: %s", dev.id)
                 await dev.update()
@@ -186,11 +181,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_device"
                 _LOGGER.warning("Invalid device: %s", dev.id)
             else:
-                if dev.get_device_type() == "Unknown":
-                    _LOGGER.debug(
-                        "Ignore the device (%s) because the type is not compatible"
-                    )
-                    continue
                 devices_list[dev.id] = str(dev)
 
         self.start_time = time.time()
