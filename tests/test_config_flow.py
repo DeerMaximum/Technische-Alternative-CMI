@@ -1,8 +1,10 @@
 """Test the Technische Alternative C.M.I. config flow."""
 from __future__ import annotations
 import time
+import json
 from typing import Any
 from unittest.mock import patch
+
 
 from ta_cmi import ApiError, Device, InvalidCredentialsError, RateLimitError
 
@@ -99,13 +101,11 @@ DUMMY_DEVICE_API_DATA_UNKOWN_DEVICE: dict[str, Any] = {
     "Status code": 0,
 }
 
-DUMMY_DEVICE_API_DATA_NO_INPUT: dict[str, Any] = {
-    "Header": {"Version": 5, "Device": "87", "Timestamp": 1630764000},
-    "Data": {
-        "Outputs": [{"Number": 1, "AD": "D", "Value": {"Value": 1, "Unit": "43"}}],
-    },
-    "Status": "OK",
-    "Status code": 0,
+DUMMY_DEVICE_API_DATA_NO_IO_SUPPORT: dict[str, Any] = {
+    "Header": {"Version": 6, "Device": "8F", "Timestamp": 1630764000},
+    "Data": {},
+    "Status": "FAIL",
+    "Status code": 2,
 }
 
 
@@ -265,6 +265,41 @@ async def test_step_devices_without_edit_fetch_defined(hass: HomeAssistant) -> N
 
         assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
         assert result["title"] == "C.M.I"
+
+
+async def test_step_device_with_device_without_io_support(hass: HomeAssistant) -> None:
+    """Test the device step with a device that dont support inputs and outputs."""
+    dummy_device: Device = Device("2", "http://dummy", "", "")
+    DATA_OVERRIDE = {"allDevices": [dummy_device]}
+
+    with patch("asyncio.sleep", wraps=sleep_mock) as sleep_m, patch(
+        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
+        side_effect=[
+            json.dumps(DUMMY_DEVICE_API_DATA_NO_IO_SUPPORT),
+            json.dumps(DUMMY_DEVICE_API_DATA),
+            json.dumps(DUMMY_DEVICE_API_DATA),
+            json.dumps(DUMMY_DEVICE_API_DATA),
+        ],
+    ) as request_m, patch.object(ConfigFlow, "override_data", DATA_OVERRIDE), patch(
+        "ta_cmi.device.Device.set_device_type",
+        side_effect=Device.set_device_type,
+        autospec=True,
+    ) as type_m:
+
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": "devices"},
+        )
+
+        args, _ = type_m.call_args
+        assert "CAN-EZ3" in args
+
+        assert sleep_m.call_count == 2
+        assert request_m.call_count == 3
+
+        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["step_id"] == "devices"
+        assert result["errors"] == {}
 
 
 async def test_step_devices_with_multiple_devices(hass: HomeAssistant) -> None:
