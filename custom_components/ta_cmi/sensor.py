@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_IDENTIFIERS,
@@ -141,15 +141,15 @@ class DeviceChannelSensor(CoordinatorEntity, SensorEntity):
         }
 
     @property
-    def device_class(self) -> str:
+    def device_class(self) -> SensorDeviceClass | None:
         """Return the device class of this entity, if any."""
         channel_raw: dict[str, Any] = self._coordinator.data[self._node_id][
             TYPE_SENSOR
         ][self._input_type][self._id]
 
-        device_class: str = channel_raw["device_class"]
+        device_class: SensorDeviceClass = channel_raw["device_class"]
 
         if device_class is None:
-            return DEFAULT_DEVICE_CLASS_MAP.get(channel_raw["unit"], "")  # type: ignore[unreachable]
+            return DEFAULT_DEVICE_CLASS_MAP.get(channel_raw["unit"], None)  # type: ignore[unreachable]
 
         return device_class

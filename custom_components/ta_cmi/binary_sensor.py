@@ -3,7 +3,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.components.binary_sensor import (
+    BinarySensorEntity,
+    BinarySensorDeviceClass,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_IDENTIFIERS,
@@ -24,7 +27,6 @@ from ta_cmi import ChannelType
 
 from . import CMIDataUpdateCoordinator
 from .const import (
-    DEFAULT_DEVICE_CLASS_MAP,
     DEVICE_TYPE,
     TYPE_BINARY,
     DOMAIN,
@@ -124,15 +126,10 @@ class DeviceChannelBinary(CoordinatorEntity, BinarySensorEntity):
         }
 
     @property
-    def device_class(self) -> str:
+    def device_class(self) -> BinarySensorDeviceClass | None:
         """Return the device class of this entity, if any."""
         channel_raw: dict[str, Any] = self._coordinator.data[self._node_id][
             TYPE_BINARY
         ][self._input_type][self._id]
 
-        device_class: str = channel_raw["device_class"]
-
-        if device_class is None:
-            return DEFAULT_DEVICE_CLASS_MAP.get(channel_raw["unit"], "")  # type: ignore[unreachable]
-
-        return device_class
+        return channel_raw.get("device_class", None)

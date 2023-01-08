@@ -5,6 +5,7 @@ from datetime import timedelta
 from logging import Logger, getLogger
 
 from ta_cmi import ChannelType
+from homeassistant.components.sensor import SensorDeviceClass
 
 _LOGGER: Logger = getLogger(__package__)
 
@@ -26,17 +27,18 @@ CONF_CHANNELS_ID: str = "id"
 CONF_CHANNELS_NAME: str = "name"
 CONF_CHANNELS_DEVICE_CLASS: str = "device_class"
 
-DEFAULT_DEVICE_CLASS_MAP: dict[str, str] = {
-    "°C": "temperature",
-    "K": "temperature",
-    "A": "current",
-    "kWh": "energy",
-    "m³": "gas",
-    "%": "humidity",
-    "lx": "illuminance",
-    "W": "power",
-    "mbar": "pressure",
-    "V": "voltage",
+
+DEFAULT_DEVICE_CLASS_MAP: dict[str, SensorDeviceClass] = {
+    "°C": SensorDeviceClass.TEMPERATURE,
+    "K": SensorDeviceClass.TEMPERATURE,
+    "A": SensorDeviceClass.CURRENT,
+    "kWh": SensorDeviceClass.ENERGY,
+    "m³": SensorDeviceClass.GAS,
+    "%": SensorDeviceClass.HUMIDITY,
+    "lx": SensorDeviceClass.ILLUMINANCE,
+    "W": SensorDeviceClass.POWER,
+    "mbar": SensorDeviceClass.PRESSURE,
+    "V": SensorDeviceClass.VOLTAGE,
 }
 
 TYPE_BINARY = "binary"
