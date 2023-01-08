@@ -16,6 +16,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from ta_cmi import (
     CMI,
     ApiError,
+    Device,
     InvalidCredentialsError,
     RateLimitError,
     InvalidDeviceError,
@@ -49,6 +50,29 @@ async def validate_login(data: dict[str, Any], session: ClientSession) -> Any:
         raise InvalidAuth from err
     except ApiError as err:
         raise CannotConnect from err
+
+
+async def fetch_device(device: Device, retry=False) -> None:
+    """Fetch the device data to display."""
+    try:
+
+        if retry:
+            _LOGGER.debug("Sleep mode for 61 seconds to prevent rate limiting")
+            await asyncio.sleep(61)
+            device.set_device_type("CAN-EZ3")
+
+        _LOGGER.debug("Try to fetch device type: %s", device.id)
+        await device.fetch_type()
+        _LOGGER.debug("Sleep mode for 61 seconds to prevent rate limiting")
+        await asyncio.sleep(61)
+
+        _LOGGER.debug("Try to fetch available device channels: %s", device.id)
+        await device.update()
+
+    except ApiError as err:
+        if "CAN-request/parameter" in str(err) and not retry:
+            return await fetch_device(device, True)
+        raise
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -157,14 +181,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await asyncio.sleep(61)
 
             try:
-
-                _LOGGER.debug("Try to fetch device type: %s", dev.id)
-                await dev.fetch_type()
-                _LOGGER.debug("Sleep mode for 61 seconds to prevent rate limiting")
-                await asyncio.sleep(61)
-
-                _LOGGER.debug("Try to fetch available device channels: %s", dev.id)
-                await dev.update()
+                await fetch_device(dev)
 
             except ApiError as err:
                 if "Unknown" not in str(err):

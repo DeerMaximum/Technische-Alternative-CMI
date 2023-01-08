@@ -1,8 +1,10 @@
 """Test the Technische Alternative C.M.I. config flow."""
 from __future__ import annotations
 import time
+import json
 from typing import Any
 from unittest.mock import patch
+
 
 from ta_cmi import ApiError, Device, InvalidCredentialsError, RateLimitError
 
@@ -271,14 +273,26 @@ async def test_step_device_with_device_without_io_support(hass: HomeAssistant) -
     DATA_OVERRIDE = {"allDevices": [dummy_device]}
 
     with patch("asyncio.sleep", wraps=sleep_mock) as sleep_m, patch(
-        "ta_cmi.baseApi.BaseAPI._make_request",
-        return_value=DUMMY_DEVICE_API_DATA_NO_IO_SUPPORT,
-    ) as request_m, patch.object(ConfigFlow, "override_data", DATA_OVERRIDE):
+        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
+        side_effect=[
+            json.dumps(DUMMY_DEVICE_API_DATA_NO_IO_SUPPORT),
+            json.dumps(DUMMY_DEVICE_API_DATA),
+            json.dumps(DUMMY_DEVICE_API_DATA),
+            json.dumps(DUMMY_DEVICE_API_DATA),
+        ],
+    ) as request_m, patch.object(ConfigFlow, "override_data", DATA_OVERRIDE), patch(
+        "ta_cmi.device.Device.set_device_type",
+        side_effect=Device.set_device_type,
+        autospec=True,
+    ) as type_m:
 
         result = await hass.config_entries.flow.async_init(
             DOMAIN,
             context={"source": "devices"},
         )
+
+        args, _ = type_m.call_args
+        assert "CAN-EZ3" in args
 
         assert sleep_m.call_count == 2
         assert request_m.call_count == 3
