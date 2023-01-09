@@ -42,19 +42,19 @@ Currently supported devices:
 
 ## Supported data types
 
-|Device type|Inputs|Outputs|DL-inputs|System-values: General|System-values: Date|System-values: Time|System-values: Sun|System-values: Electrical power|Analog network inputs|Digital network inputs|M-Bus|Modbus|KNX|Analog logging|Digital logging
-|---        |:---: |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-|UVR1611    |✔|✔|❌|❌|❌|❌|❌|❌|✔|✔|❌|❌|❌|❌|❌|
-|UVR16x2    |✔|✔|✔|✔|✔|✔|✔|❌|❌|❌|❌|❌|❌|✔|✔|
-|RSM610     |✔|✔|✔|❌|❌|❌|❌|❌|❌|❌|✔|❌|❌|❌|❌|
-|CAN-I/O45  |✔|✔|❌|❌|❌|❌|❌|❌|❌|❌|❌|❌|❌|❌|❌|
-|CAN-EZ2    |✔|✔|❌|❌|❌|❌|❌|✔|❌|❌|❌|❌|❌|❌|❌|
-|CAN-MTx2   |✔|✔|❌|❌|❌|❌|❌|❌|❌|❌|❌|❌|❌|❌|❌|
-|CAN-BC2    |✔|✔|❌|❌|❌|❌|❌|❌|❌|❌|✔|✔|✔|❌|❌|
-|UVR65      |✔|✔|❌|❌|❌|❌|❌|❌|❌|❌|❌|❌|❌|❌|❌|
-|CAN-EZ3    |❌|❌|✔|✔|✔|✔|✔|✔|❌|❌|❌|✔|❌|✔|✔|
-|UVR610     |✔|✔|❌|❌|❌|❌|❌|❌|❌|❌|✔|❌|❌|❌|❌|
-|UVR67      |✔|✔|❌|❌|❌|❌|❌|❌|❌|❌|❌|❌|❌|❌|❌|
+| Device type | Inputs | Outputs | DL-inputs | System-values: General | System-values: Date | System-values: Time | System-values: Sun | System-values: Electrical power | Analog network inputs | Digital network inputs | M-Bus | Modbus | KNX | Analog logging | Digital logging |
+|-------------|:------:|:-------:|:---------:|:----------------------:|:-------------------:|:-------------------:|:------------------:|:-------------------------------:|:---------------------:|:----------------------:|:-----:|:------:|:---:|:--------------:|:---------------:|
+| UVR1611     |   ✔    |    ✔    |     ❌     |           ❌            |          ❌          |          ❌          |         ❌          |                ❌                |           ✔           |           ✔            |   ❌   |   ❌    |  ❌  |       ❌        |        ❌        |
+| UVR16x2     |   ✔    |    ✔    |     ✔     |           ✔            |          ✔          |          ✔          |         ✔          |                ❌                |           ❌           |           ❌            |   ❌   |   ❌    |  ❌  |       ✔        |        ✔        |
+| RSM610      |   ✔    |    ✔    |     ✔     |           ❌            |          ❌          |          ❌          |         ❌          |                ❌                |           ❌           |           ❌            |   ✔   |   ❌    |  ❌  |       ❌        |        ❌        |
+| CAN-I/O45   |   ✔    |    ✔    |     ❌     |           ❌            |          ❌          |          ❌          |         ❌          |                ❌                |           ❌           |           ❌            |   ❌   |   ❌    |  ❌  |       ❌        |        ❌        |
+| CAN-EZ2     |   ✔    |    ✔    |     ❌     |           ❌            |          ❌          |          ❌          |         ❌          |                ✔                |           ❌           |           ❌            |   ❌   |   ❌    |  ❌  |       ❌        |        ❌        |
+| CAN-MTx2    |   ✔    |    ✔    |     ❌     |           ❌            |          ❌          |          ❌          |         ❌          |                ❌                |           ❌           |           ❌            |   ❌   |   ❌    |  ❌  |       ❌        |        ❌        |
+| CAN-BC2     |   ✔    |    ✔    |     ❌     |           ❌            |          ❌          |          ❌          |         ❌          |                ❌                |           ❌           |           ❌            |   ✔   |   ✔    |  ✔  |       ❌        |        ❌        |
+| UVR65       |   ✔    |    ✔    |     ❌     |           ❌            |          ❌          |          ❌          |         ❌          |                ❌                |           ❌           |           ❌            |   ❌   |   ❌    |  ❌  |       ❌        |        ❌        |
+| CAN-EZ3     |   ❌    |    ❌    |     ✔     |           ✔            |          ✔          |          ✔          |         ✔          |                ✔                |           ❌           |           ❌            |   ❌   |   ✔    |  ❌  |       ✔        |        ✔        |
+| UVR610      |   ✔    |    ✔    |     ✔     |           ❌            |          ❌          |          ❌          |         ❌          |                ❌                |           ❌           |           ❌            |   ✔   |   ❌    |  ❌  |       ❌        |        ❌        |
+| UVR67       |   ✔    |    ✔    |     ❌     |           ❌            |          ❌          |          ❌          |         ❌          |                ❌                |           ❌           |           ❌            |   ❌   |   ❌    |  ❌  |       ❌        |        ❌        |
 
 
 > **Note**
