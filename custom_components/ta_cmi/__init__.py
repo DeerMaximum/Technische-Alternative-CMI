@@ -1,6 +1,8 @@
 """The Technische Alternative C.M.I. integration."""
 from __future__ import annotations
 
+from types import MappingProxyType
+
 import asyncio
 from typing import Any
 
@@ -48,6 +50,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
+
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Handle options update."""
+    config = dict(entry.data)
+    if entry.options:
+        config.update(entry.options)
+        entry.data = MappingProxyType(config)
+
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 class CMIDataUpdateCoordinator(DataUpdateCoordinator):
