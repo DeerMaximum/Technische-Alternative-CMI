@@ -4,11 +4,13 @@ from __future__ import annotations
 import asyncio
 import time
 from typing import Any
+from datetime import timedelta
 
 from aiohttp import ClientSession
 
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 import homeassistant.helpers.config_validation as cv
@@ -33,7 +35,9 @@ from .const import (
     CONF_DEVICE_FETCH_MODE,
     CONF_DEVICE_ID,
     CONF_DEVICE_TYPE,
+    CONF_SCAN_INTERVAL,
     CONF_DEVICES,
+    SCAN_INTERVAL,
     DEVICE_TYPE_STRING_MAP,
     DOMAIN,
 )
@@ -276,6 +280,58 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if time_lapsed <= 60:
             await asyncio.sleep(60 - time_lapsed)
         return self.async_create_entry(title="C.M.I", data=self.config)
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> OptionsFlowHandler:
+        """Get the options flow for this handler."""
+        return OptionsFlowHandler(config_entry)
+
+
+def get_schema(config: dict[str, Any], device_count: int) -> vol.Schema:
+    """Generate the schema."""
+
+    default_interval: timedelta = SCAN_INTERVAL
+
+    if config.get(CONF_SCAN_INTERVAL, None) is not None:
+        default_interval = timedelta(minutes=config.get(CONF_SCAN_INTERVAL))
+
+    return vol.Schema(
+        {
+            vol.Required(
+                CONF_SCAN_INTERVAL, default=default_interval.seconds / 60
+            ): vol.All(int, vol.Range(min=device_count + 1, max=60)),
+        }
+    )
+
+
+class OptionsFlowHandler(config_entries.OptionsFlow):
+    """Handle a option flow for Technische Alternative C.M.I.."""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
+        self.data = dict(self.config_entry.data)
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle options flow."""
+
+        errors: dict[str, Any] = {}
+
+        if user_input is not None and not errors:
+            self.data[CONF_SCAN_INTERVAL] = user_input[CONF_SCAN_INTERVAL]
+
+            return self.async_create_entry(title="", data=self.data)
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=get_schema(self.data, len(self.data.get(CONF_DEVICES, {}))),
+            errors=errors,
+        )
 
 
 class CannotConnect(HomeAssistantError):

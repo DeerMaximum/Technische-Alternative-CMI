@@ -8,6 +8,8 @@ from unittest.mock import patch
 
 from ta_cmi import ApiError, Device, InvalidCredentialsError, RateLimitError
 
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
 from homeassistant import data_entry_flow
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
@@ -22,6 +24,9 @@ from custom_components.ta_cmi.const import (
     CONF_CHANNELS_TYPE,
     CONF_DEVICE_FETCH_MODE,
     CONF_DEVICES,
+    CONF_DEVICE_ID,
+    CONF_DEVICE_TYPE,
+    CONF_SCAN_INTERVAL,
     DOMAIN,
 )
 
@@ -106,6 +111,40 @@ DUMMY_DEVICE_API_DATA_NO_IO_SUPPORT: dict[str, Any] = {
     "Data": {},
     "Status": "FAIL",
     "Status code": 2,
+}
+
+
+DUMMY_CONFIG_ENTRY: dict[str, Any] = {
+    CONF_HOST: "http://localhost",
+    CONF_USERNAME: "test",
+    CONF_PASSWORD: "test",
+    CONF_DEVICES: [
+        {
+            CONF_DEVICE_ID: "2",
+            CONF_DEVICE_FETCH_MODE: "all",
+            CONF_DEVICE_TYPE: "UVR16x2",
+            CONF_CHANNELS: [],
+        }
+    ],
+}
+
+DUMMY_ENTRY_CHANGE: dict[str, Any] = {
+    CONF_SCAN_INTERVAL: 15,
+}
+
+DUMMY_CONFIG_ENTRY_UPDATED: dict[str, Any] = {
+    CONF_HOST: "http://localhost",
+    CONF_USERNAME: "test",
+    CONF_PASSWORD: "test",
+    CONF_SCAN_INTERVAL: 15,
+    CONF_DEVICES: [
+        {
+            CONF_DEVICE_ID: "2",
+            CONF_DEVICE_FETCH_MODE: "all",
+            CONF_DEVICE_TYPE: "UVR16x2",
+            CONF_CHANNELS: [],
+        }
+    ],
 }
 
 
@@ -459,3 +498,30 @@ async def test_step_channels_edit_more(hass: HomeAssistant) -> None:
         assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
         assert result["step_id"] == "channel"
         assert result["errors"] == {}
+
+
+async def test_options_flow_init(hass: HomeAssistant) -> None:
+    """Test config flow options."""
+    config_entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="C.M.I",
+        data=DUMMY_CONFIG_ENTRY,
+    )
+    config_entry.add_to_hass(hass)
+
+    with patch("custom_components.ta_cmi.async_setup_entry", return_value=True):
+        result = await hass.config_entries.options.async_init(config_entry.entry_id)
+
+        await hass.config_entries.async_setup(config_entry.entry_id)
+        await hass.async_block_till_done()
+
+        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["step_id"] == "init"
+
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            user_input=DUMMY_ENTRY_CHANGE,
+        )
+
+        assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+        assert dict(config_entry.options) == DUMMY_CONFIG_ENTRY_UPDATED

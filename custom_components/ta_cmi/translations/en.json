@@ -1,44 +1,62 @@
 {
     "config": {
-        "error": {
-            "rate_limit": "C.M.I rate limit reached. Try again in one minute.",
-            "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
-            "device_error": "Error while communicating with a device. See logs for details.",
-            "invalid_device" : "Invalid device connected to the CMI. See logs for details.",
-            "unknown": "[%key:common::config_flow::error::unknown%]",
-            "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]"
+      "step": {
+        "user": {
+          "title": "Set up C.M.I",
+          "data": {
+            "host": "Base url of the C.M.I (http://IP)",
+            "username": "Username",
+            "password": "Password",
+            "fetch_can_logging": "Use additional data sources for supported devices"
+          }
         },
-        "step": {
-            "channel": {
-                "data": {
-                    "device_class": "Override the device class (Optional)",
-                    "edit_more_channels": "Edit other channels?",
-                    "id": "ID of the channel",
-                    "name": "Name of the sensor",
-                    "node": "Node",
-                    "type": "Input type"
-                },
-                "description": "Configure the channel to your needs",
-                "title": "Configure channel"
-            },
-            "devices": {
-                "data": {
-                    "devices": "Connected devices",
-                    "edit_channels": "Edit channels?",
-                    "fetchmode": "Fetch all channels. (Otherwise only defined channels)"
-                },
-                "description": "Select devices to monitor",
-                "title": "Set up Nodes"
-            },
-            "user": {
-                "data": {
-                    "host": "Base url of the C.M.I (http://IP)",
-                    "password": "Password",
-                    "username": "Username",
-                    "fetch_can_logging": "Use additional data sources for supported devices"
-                },
-                "title": "Set up C.M.I"
-            }
+        "devices": {
+          "title": "Set up Nodes",
+          "description": "Select devices to monitor",
+          "data": {
+            "devices": "Connected devices",
+            "edit_channels": "Edit channels?",
+            "fetchmode": "Fetch all channels. (Otherwise only defined channels)"
+          }
+        },
+        "channel": {
+          "title": "Configure channel",
+          "description": "Configure the channel to your needs",
+          "data": {
+            "node": "Node",
+            "id": "ID of the channel",
+            "type": "Input type",
+            "name": "Name of the sensor",
+            "device_class": "Override the device class (Optional)",
+            "edit_more_channels": "Edit other channels?"
+          }
         }
+      },
+      "error": {
+        "rate_limit": "C.M.I rate limit reached. Try again in one minute.",
+        "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+        "device_error": "Error while communicating with a device. See logs for details.",
+        "invalid_device" : "Invalid device connected to the CMI. See logs for details.",
+        "unknown": "[%key:common::config_flow::error::unknown%]",
+        "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]"
+      }
+    },
+    "options": {
+      "step": {
+        "init": {
+          "title": "Options",
+          "data": {
+            "scan_interval": "Update interval"
+          }
+        }
+      },
+      "error": {
+        "rate_limit": "C.M.I rate limit reached. Try again in one minute.",
+        "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+        "device_error": "Error while communicating with a device. See logs for details.",
+        "invalid_device" : "Invalid device connected to the CMI. See logs for details.",
+        "unknown": "[%key:common::config_flow::error::unknown%]",
+        "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]"
+      }
     }
-}
+  }

@@ -1,8 +1,12 @@
 """The Technische Alternative C.M.I. integration."""
 from __future__ import annotations
 
+from types import MappingProxyType
+
 import asyncio
 from typing import Any
+
+from datetime import timedelta
 
 from async_timeout import timeout
 from homeassistant.config_entries import ConfigEntry
@@ -25,6 +29,7 @@ from .const import (
     DEVICE_DELAY,
     DOMAIN,
     SCAN_INTERVAL,
+    CONF_SCAN_INTERVAL,
 )
 from .device_parser import DeviceParser
 
@@ -39,7 +44,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     devices: dict[str, Any] = entry.data[CONF_DEVICES]
 
-    coordinator = CMIDataUpdateCoordinator(hass, host, username, password, devices)
+    update_interval: timedelta = SCAN_INTERVAL
+
+    if entry.data.get(CONF_SCAN_INTERVAL, None) is not None:
+        update_interval = timedelta(minutes=entry.data.get(CONF_SCAN_INTERVAL))
+
+    coordinator = CMIDataUpdateCoordinator(
+        hass, host, username, password, devices, update_interval
+    )
+
+    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
     await coordinator.async_config_entry_first_refresh()
 
@@ -48,6 +62,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
+
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Handle options update."""
+    config = dict(entry.data)
+    if entry.options:
+        config.update(entry.options)
+        entry.data = MappingProxyType(config)
+
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 class CMIDataUpdateCoordinator(DataUpdateCoordinator):
@@ -60,6 +89,7 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
         username: str,
         password: str,
         devices: Any,
+        update_interval: timedelta,
     ) -> None:
         """Initialize."""
         self.devices_raw: dict[str, Any] = {}
@@ -79,7 +109,9 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
             self.devices.append(device)
             self.devices_raw[device_id] = dev_raw
 
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
+        _LOGGER.debug("Used update interval: %s", update_interval)
+
+        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Update data."""
