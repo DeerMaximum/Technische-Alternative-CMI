@@ -6,6 +6,8 @@ from types import MappingProxyType
 import asyncio
 from typing import Any
 
+from datetime import timedelta
+
 from async_timeout import timeout
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -27,6 +29,7 @@ from .const import (
     DEVICE_DELAY,
     DOMAIN,
     SCAN_INTERVAL,
+    CONF_SCAN_INTERVAL,
 )
 from .device_parser import DeviceParser
 
@@ -41,7 +44,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     devices: dict[str, Any] = entry.data[CONF_DEVICES]
 
-    coordinator = CMIDataUpdateCoordinator(hass, host, username, password, devices)
+    update_interval: timedelta = SCAN_INTERVAL
+
+    if entry.data.get(CONF_SCAN_INTERVAL, None) is not None:
+        update_interval = timedelta(entry.data.get(CONF_SCAN_INTERVAL))
+
+    coordinator = CMIDataUpdateCoordinator(
+        hass, host, username, password, devices, update_interval
+    )
 
     await coordinator.async_config_entry_first_refresh()
 
@@ -77,6 +87,7 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
         username: str,
         password: str,
         devices: Any,
+        update_interval: timedelta,
     ) -> None:
         """Initialize."""
         self.devices_raw: dict[str, Any] = {}
@@ -96,7 +107,7 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
             self.devices.append(device)
             self.devices_raw[device_id] = dev_raw
 
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
+        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Update data."""

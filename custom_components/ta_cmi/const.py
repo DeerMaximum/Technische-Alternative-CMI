@@ -16,7 +16,7 @@ DOMAIN: str = "ta_cmi"
 
 DEVICE_TYPE: str = "device_type"
 
-CONF_SCAN_INTERVAL = "scasn_interval"
+CONF_SCAN_INTERVAL = "scan_interval"
 
 CONF_DEVICES: str = "devices"
 CONF_DEVICE_ID: str = "id"
