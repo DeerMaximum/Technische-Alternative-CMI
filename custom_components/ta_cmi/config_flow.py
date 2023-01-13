@@ -292,13 +292,17 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 def get_schema(config: dict[str, Any], device_count: int) -> vol.Schema:
     """Generate the schema."""
-    default_interval: timedelta = config.get(CONF_SCAN_INTERVAL, SCAN_INTERVAL)
+
+    default_interval: timedelta = SCAN_INTERVAL
+
+    if config.get(CONF_SCAN_INTERVAL, None) is not None:
+        default_interval = timedelta(minutes=config.get(CONF_SCAN_INTERVAL))
 
     return vol.Schema(
         {
-            vol.Required(CONF_SCAN_INTERVAL, default=default_interval): vol.All(
-                int, vol.Range(min=device_count + 1, max=60)
-            ),
+            vol.Required(
+                CONF_SCAN_INTERVAL, default=default_interval.seconds / 60
+            ): vol.All(int, vol.Range(min=device_count + 1, max=60)),
         }
     )
 

@@ -47,11 +47,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     update_interval: timedelta = SCAN_INTERVAL
 
     if entry.data.get(CONF_SCAN_INTERVAL, None) is not None:
-        update_interval = timedelta(entry.data.get(CONF_SCAN_INTERVAL))
+        update_interval = timedelta(minutes=entry.data.get(CONF_SCAN_INTERVAL))
 
     coordinator = CMIDataUpdateCoordinator(
         hass, host, username, password, devices, update_interval
     )
+
+    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
     await coordinator.async_config_entry_first_refresh()
 
@@ -106,6 +108,8 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
 
             self.devices.append(device)
             self.devices_raw[device_id] = dev_raw
+
+        _LOGGER.debug("Used update interval: %s", update_interval)
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
 
