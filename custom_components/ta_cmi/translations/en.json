@@ -46,7 +46,7 @@
         "init": {
           "title": "Options",
           "data": {
-            "scan_interval": "Update interval"
+            "scan_interval": "Update interval (minutes)"
           }
         }
       },
