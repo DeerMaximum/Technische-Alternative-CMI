@@ -81,7 +81,7 @@ DUMMY_CHANNEL_DATA_OTHER_EDIT = {
 }
 
 DUMMY_DEVICE_API_DATA: dict[str, Any] = {
-    "Header": {"Version": 5, "Device": "87", "Timestamp": 1630764000},
+    "Header": {"Version": 5, "Device": "88", "Timestamp": 1630764000},
     "Data": {
         "Inputs": [
             {"Number": 1, "AD": "A", "Value": {"Value": 92.2, "Unit": "1"}},
@@ -107,7 +107,7 @@ DUMMY_DEVICE_API_DATA_UNKOWN_DEVICE: dict[str, Any] = {
 }
 
 DUMMY_DEVICE_API_DATA_NO_IO_SUPPORT: dict[str, Any] = {
-    "Header": {"Version": 6, "Device": "8F", "Timestamp": 1630764000},
+    "Header": {"Version": 6, "Device": "8D", "Timestamp": 1630764000},
     "Data": {},
     "Status": "FAIL",
     "Status code": 2,
@@ -331,7 +331,7 @@ async def test_step_device_with_device_without_io_support(hass: HomeAssistant) -
         )
 
         args, _ = type_m.call_args
-        assert "CAN-EZ3" in args
+        assert "CAN-BC2" in args
 
         assert sleep_m.call_count == 2
         assert request_m.call_count == 3
