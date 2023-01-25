@@ -331,7 +331,7 @@ async def test_step_device_with_device_without_io_support(hass: HomeAssistant) -
         )
 
         args, _ = type_m.call_args
-        assert "CAN-BC2" in args
+        assert "DUMMY-NO-IO" in args
 
         assert sleep_m.call_count == 2
         assert request_m.call_count == 3

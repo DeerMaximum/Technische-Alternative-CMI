@@ -63,7 +63,7 @@ async def fetch_device(device: Device, retry=False) -> None:
         if retry:
             _LOGGER.debug("Sleep mode for 61 seconds to prevent rate limiting")
             await asyncio.sleep(61)
-            device.set_device_type("CAN-BC2")
+            device.set_device_type("DUMMY-NO-IO")
 
         _LOGGER.debug("Try to fetch device type: %s", device.id)
         await device.fetch_type()
