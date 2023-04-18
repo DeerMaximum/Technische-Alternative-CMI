@@ -19,7 +19,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from ta_cmi import ApiError, Device, InvalidCredentialsError, RateLimitError
+from ta_cmi import ApiError, Device, InvalidCredentialsError, RateLimitError, CMIAPI
 
 from .const import (
     _LOGGER,
@@ -97,10 +97,12 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
         self.devices: list[Device] = []
         self.host = host
 
+        cmi_api = CMIAPI(host, username, password, async_get_clientsession(hass))
+
         for dev_raw in devices:
             device_id: str = dev_raw[CONF_DEVICE_ID]
             device: Device = Device(
-                device_id, host, username, password, async_get_clientsession(hass)
+                device_id, cmi_api
             )
 
             if CONF_DEVICE_TYPE in dev_raw:
