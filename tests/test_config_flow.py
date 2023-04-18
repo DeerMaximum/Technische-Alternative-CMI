@@ -1,20 +1,18 @@
 """Test the Technische Alternative C.M.I. config flow."""
 from __future__ import annotations
-import time
+
 import json
+import time
 from typing import Any
 from unittest.mock import patch
-
-import pytest
-
-from ta_cmi import ApiError, Device, InvalidCredentialsError, RateLimitError
-
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from homeassistant import data_entry_flow
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
+import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+from ta_cmi import CMIAPI, ApiError, Device, InvalidCredentialsError, RateLimitError
 
 from custom_components.ta_cmi.config_flow import ConfigFlow
 from custom_components.ta_cmi.const import (
@@ -24,9 +22,9 @@ from custom_components.ta_cmi.const import (
     CONF_CHANNELS_NAME,
     CONF_CHANNELS_TYPE,
     CONF_DEVICE_FETCH_MODE,
-    CONF_DEVICES,
     CONF_DEVICE_ID,
     CONF_DEVICE_TYPE,
+    CONF_DEVICES,
     CONF_SCAN_INTERVAL,
     DOMAIN,
 )
@@ -148,6 +146,8 @@ DUMMY_CONFIG_ENTRY_UPDATED: dict[str, Any] = {
     ],
 }
 
+DUMMY_API = CMIAPI("", "", "")
+
 
 @pytest.mark.asyncio
 async def test_show_set_form(hass: HomeAssistant) -> None:
@@ -164,7 +164,7 @@ async def test_show_set_form(hass: HomeAssistant) -> None:
 async def test_step_user_connection_error(hass: HomeAssistant) -> None:
     """Test starting a flow by user but no connection found."""
     with patch(
-        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
+        "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
         side_effect=ApiError("Could not connect to C.M.I."),
     ):
         result = await hass.config_entries.flow.async_init(
@@ -180,10 +180,9 @@ async def test_step_user_connection_error(hass: HomeAssistant) -> None:
 async def test_step_user_invalid_auth(hass: HomeAssistant) -> None:
     """Test starting a flow by user but with invalid credentials."""
     with patch(
-        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
+        "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
         side_effect=InvalidCredentialsError("Invalid API key"),
     ):
-
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": SOURCE_USER}, data=DUMMY_CONNECTION_DATA
         )
@@ -197,10 +196,9 @@ async def test_step_user_invalid_auth(hass: HomeAssistant) -> None:
 async def test_step_user_unexpected_exception(hass: HomeAssistant) -> None:
     """Test starting a flow by user but with an unexpected exception."""
     with patch(
-        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
+        "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
         side_effect=Exception("DUMMY"),
     ):
-
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": SOURCE_USER}, data=DUMMY_CONNECTION_DATA
         )
@@ -214,14 +212,13 @@ async def test_step_user_unexpected_exception(hass: HomeAssistant) -> None:
 async def test_step_user(hass: HomeAssistant) -> None:
     """Test starting a flow by user with valid values."""
     with patch(
-        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
+        "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
         return_value="2;",
     ), patch(
-        "ta_cmi.baseApi.BaseAPI._make_request", return_value=DUMMY_DEVICE_API_DATA
+        "ta_cmi.cmi_api.CMIAPI._make_request", return_value=DUMMY_DEVICE_API_DATA
     ), patch(
         "asyncio.sleep", wraps=sleep_mock
     ) as sleep_m:
-
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": SOURCE_USER}, data=DUMMY_CONNECTION_DATA
         )
@@ -237,14 +234,13 @@ async def test_step_user(hass: HomeAssistant) -> None:
 async def test_step_user_only_ip(hass: HomeAssistant) -> None:
     """Test starting a flow by user with valid values but the host is only an ip."""
     with patch(
-        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
+        "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
         return_value="2;",
     ), patch(
-        "ta_cmi.baseApi.BaseAPI._make_request", return_value=DUMMY_DEVICE_API_DATA
+        "ta_cmi.cmi_api.CMIAPI._make_request", return_value=DUMMY_DEVICE_API_DATA
     ), patch(
         "asyncio.sleep", wraps=sleep_mock
     ) as sleep_m:
-
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": SOURCE_USER}, data=DUMMY_CONNECTION_DATA_ONLY_IP
         )
@@ -261,15 +257,14 @@ async def test_step_user_unkown_device(hass: HomeAssistant) -> None:
     """Test to start a flow by a user with unknown device."""
 
     with patch(
-        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
+        "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
         return_value="2;3;",
     ), patch(
-        "ta_cmi.baseApi.BaseAPI._make_request",
+        "ta_cmi.cmi_api.CMIAPI._make_request",
         return_value=DUMMY_DEVICE_API_DATA_UNKOWN_DEVICE,
     ), patch(
         "asyncio.sleep", wraps=sleep_mock
     ):
-
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": SOURCE_USER}, data=DUMMY_CONNECTION_DATA
         )
@@ -284,7 +279,6 @@ async def test_step_devices_without_edit_fetch_all(hass: HomeAssistant) -> None:
     """Test the device step without edit channels and fetchmode all."""
 
     with patch("asyncio.sleep", wraps=sleep_mock):
-
         result = await hass.config_entries.flow.async_init(
             DOMAIN,
             context={"source": "devices"},
@@ -297,15 +291,14 @@ async def test_step_devices_without_edit_fetch_all(hass: HomeAssistant) -> None:
 
 @pytest.mark.asyncio
 async def test_step_devices_without_edit_fetch_defined(hass: HomeAssistant) -> None:
-    """Test the device step without edit channels and fetchmode defined."""
+    """Test the device step without edit channels and fetch mode defined."""
 
-    dummy_device: Device = Device("2", "http://dummy", "", "")
+    dummy_device: Device = Device("2", DUMMY_API)
     DATA_OVERRIDE = {"allDevices": [dummy_device]}
 
     with patch("asyncio.sleep", wraps=sleep_mock), patch.object(
         ConfigFlow, "override_data", DATA_OVERRIDE
     ):
-
         result = await hass.config_entries.flow.async_init(
             DOMAIN,
             context={"source": "devices"},
@@ -319,11 +312,11 @@ async def test_step_devices_without_edit_fetch_defined(hass: HomeAssistant) -> N
 @pytest.mark.asyncio
 async def test_step_device_with_device_without_io_support(hass: HomeAssistant) -> None:
     """Test the device step with a device that don't support inputs and outputs."""
-    dummy_device: Device = Device("2", "http://dummy", "", "")
+    dummy_device: Device = Device("2", DUMMY_API)
     DATA_OVERRIDE = {"allDevices": [dummy_device]}
 
     with patch("asyncio.sleep", wraps=sleep_mock) as sleep_m, patch(
-        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
+        "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
         side_effect=[
             json.dumps(DUMMY_DEVICE_API_DATA_NO_IO_SUPPORT),
             json.dumps(DUMMY_DEVICE_API_DATA),
@@ -335,7 +328,6 @@ async def test_step_device_with_device_without_io_support(hass: HomeAssistant) -
         side_effect=Device.set_device_type,
         autospec=True,
     ) as type_m:
-
         result = await hass.config_entries.flow.async_init(
             DOMAIN,
             context={"source": "devices"},
@@ -356,16 +348,15 @@ async def test_step_device_with_device_without_io_support(hass: HomeAssistant) -
 async def test_step_devices_with_multiple_devices(hass: HomeAssistant) -> None:
     """Test the device step with multiple devices."""
 
-    dummy_device: Device = Device("2", "http://dummy", "", "")
-    dummy_Device2: Device = Device("3", "http://dummy", "", "")
+    dummy_device: Device = Device("2", DUMMY_API)
+    dummy_Device2: Device = Device("3", DUMMY_API)
 
     DATA_OVERRIDE = {"allDevices": [dummy_device, dummy_Device2]}
 
     with patch.object(ConfigFlow, "override_data", DATA_OVERRIDE), patch(
-        "ta_cmi.baseApi.BaseAPI._make_request",
+        "ta_cmi.cmi_api.CMIAPI._make_request",
         return_value=DUMMY_DEVICE_API_DATA_UNKOWN_DEVICE,
     ), patch("asyncio.sleep", wraps=sleep_mock):
-
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": "devices"}
         )
@@ -397,7 +388,6 @@ async def test_step_finish_dynamic_wait(hass: HomeAssistant) -> None:
     with patch("asyncio.sleep", wraps=sleep_mock) as mock, patch.object(
         ConfigFlow, "init_start_time", time.time()
     ):
-
         result = await hass.config_entries.flow.async_init(
             DOMAIN,
             context={"source": "devices"},
@@ -415,7 +405,7 @@ async def test_step_device_communication_error(hass: HomeAssistant) -> None:
     """Test the channel step with a communication error."""
 
     with patch(
-        "ta_cmi.baseApi.BaseAPI._make_request",
+        "ta_cmi.cmi_api.CMIAPI._make_request",
         side_effect=ApiError("Could not connect to C.M.I"),
     ), patch("asyncio.sleep", wraps=sleep_mock):
         result = await hass.config_entries.flow.async_init(
@@ -433,7 +423,7 @@ async def test_step_device_unkown_error(hass: HomeAssistant) -> None:
     """Test the channel step with an unexpected error."""
 
     with patch(
-        "ta_cmi.baseApi.BaseAPI._make_request",
+        "ta_cmi.cmi_api.CMIAPI._make_request",
         side_effect=ApiError("Unknown error"),
     ), patch("asyncio.sleep", wraps=sleep_mock):
         result = await hass.config_entries.flow.async_init(
@@ -451,7 +441,7 @@ async def test_step_device_rate_limit_error(hass: HomeAssistant) -> None:
     """Test the channel step with a rate limit error."""
 
     with patch(
-        "ta_cmi.baseApi.BaseAPI._make_request",
+        "ta_cmi.cmi_api.CMIAPI._make_request",
         side_effect=RateLimitError("RateLimit"),
     ), patch("asyncio.sleep", wraps=sleep_mock):
         result = await hass.config_entries.flow.async_init(
@@ -468,7 +458,7 @@ async def test_step_device_rate_limit_error(hass: HomeAssistant) -> None:
 async def test_step_channels_edit_only_one(hass: HomeAssistant) -> None:
     """Test the channel step without edit other channels."""
 
-    dummy_device: Device = Device("2", "", "", "")
+    dummy_device: Device = Device("2", DUMMY_API)
 
     DATA_OVERRIDE = {"allDevices": [dummy_device]}
 
@@ -481,7 +471,6 @@ async def test_step_channels_edit_only_one(hass: HomeAssistant) -> None:
     with patch.object(ConfigFlow, "override_data", DATA_OVERRIDE), patch.object(
         ConfigFlow, "override_config", CONFIG_OVERRIDE
     ), patch("asyncio.sleep", wraps=sleep_mock):
-
         result = await hass.config_entries.flow.async_init(
             DOMAIN,
             context={"source": "channel"},
@@ -496,7 +485,7 @@ async def test_step_channels_edit_only_one(hass: HomeAssistant) -> None:
 async def test_step_channels_edit_more(hass: HomeAssistant) -> None:
     """Test the channel step with edit other channels."""
 
-    dummy_device: Device = Device("2", "", "", "")
+    dummy_device: Device = Device("2", DUMMY_API)
 
     DATA_OVERRIDE = {"allDevices": [dummy_device], CONF_DEVICES: ["2"]}
 
@@ -509,7 +498,6 @@ async def test_step_channels_edit_more(hass: HomeAssistant) -> None:
     with patch.object(ConfigFlow, "override_data", DATA_OVERRIDE), patch.object(
         ConfigFlow, "override_config", CONFIG_OVERRIDE
     ), patch("asyncio.sleep", wraps=sleep_mock):
-
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": "channel"}, data=DUMMY_CHANNEL_DATA_OTHER_EDIT
         )
@@ -522,6 +510,7 @@ async def test_step_channels_edit_more(hass: HomeAssistant) -> None:
 @pytest.mark.asyncio
 async def test_options_flow_init(hass: HomeAssistant) -> None:
     """Test config flow options."""
+
     config_entry = MockConfigEntry(
         domain=DOMAIN,
         title="C.M.I",

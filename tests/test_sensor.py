@@ -107,10 +107,10 @@ ENTRY_DATA: dict[str, Any] = {
 async def test_sensors(hass: HomeAssistant) -> None:
     """Test the creation and values of the sensors."""
     with patch(
-        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
-        return_value="2;",
+        "ta_cmi.cmi_api.CMIAPI.get_devices_ids",
+        return_value=["2"],
     ), patch(
-        "ta_cmi.baseApi.BaseAPI._make_request", return_value=DUMMY_DEVICE_API_DATA
+        "ta_cmi.cmi_api.CMIAPI.get_device_data", return_value=DUMMY_DEVICE_API_DATA
     ), patch(
         "custom_components.ta_cmi.const.DEVICE_DELAY", 1
     ), patch(
@@ -273,7 +273,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
 async def test_sensors_invalid_credentials(hass: HomeAssistant) -> None:
     """Test the creation and values of the sensors with invalid credentials."""
     with patch(
-        "ta_cmi.baseApi.BaseAPI._make_request_no_json",
+        "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
         side_effect=InvalidCredentialsError("Invalid API key"),
     ), patch("asyncio.sleep", wraps=sleep_mock):
         conf_entry: MockConfigEntry = MockConfigEntry(
