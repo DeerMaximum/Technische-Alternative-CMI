@@ -2,6 +2,8 @@
 from typing import Any
 from unittest.mock import patch
 
+import pytest
+
 from ta_cmi import InvalidCredentialsError
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -101,6 +103,7 @@ ENTRY_DATA: dict[str, Any] = {
 }
 
 
+@pytest.mark.asyncio
 async def test_sensors(hass: HomeAssistant) -> None:
     """Test the creation and values of the sensors."""
     with patch(
@@ -266,6 +269,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert entry_dl_bus2.unique_id == "ta-cmi-2-Dl-Bus2"
 
 
+@pytest.mark.asyncio
 async def test_sensors_invalid_credentials(hass: HomeAssistant) -> None:
     """Test the creation and values of the sensors with invalid credentials."""
     with patch(

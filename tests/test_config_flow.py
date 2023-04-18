@@ -5,6 +5,7 @@ import json
 from typing import Any
 from unittest.mock import patch
 
+import pytest
 
 from ta_cmi import ApiError, Device, InvalidCredentialsError, RateLimitError
 
@@ -148,6 +149,7 @@ DUMMY_CONFIG_ENTRY_UPDATED: dict[str, Any] = {
 }
 
 
+@pytest.mark.asyncio
 async def test_show_set_form(hass: HomeAssistant) -> None:
     """Test that the setup form is served."""
     result = await hass.config_entries.flow.async_init(
@@ -158,6 +160,7 @@ async def test_show_set_form(hass: HomeAssistant) -> None:
     assert result["step_id"] == "user"
 
 
+@pytest.mark.asyncio
 async def test_step_user_connection_error(hass: HomeAssistant) -> None:
     """Test starting a flow by user but no connection found."""
     with patch(
@@ -173,6 +176,7 @@ async def test_step_user_connection_error(hass: HomeAssistant) -> None:
         assert result["errors"] == {"base": "cannot_connect"}
 
 
+@pytest.mark.asyncio
 async def test_step_user_invalid_auth(hass: HomeAssistant) -> None:
     """Test starting a flow by user but with invalid credentials."""
     with patch(
@@ -189,6 +193,7 @@ async def test_step_user_invalid_auth(hass: HomeAssistant) -> None:
         assert result["errors"] == {"base": "invalid_auth"}
 
 
+@pytest.mark.asyncio
 async def test_step_user_unexpected_exception(hass: HomeAssistant) -> None:
     """Test starting a flow by user but with an unexpected exception."""
     with patch(
@@ -205,6 +210,7 @@ async def test_step_user_unexpected_exception(hass: HomeAssistant) -> None:
         assert result["errors"] == {"base": "unknown"}
 
 
+@pytest.mark.asyncio
 async def test_step_user(hass: HomeAssistant) -> None:
     """Test starting a flow by user with valid values."""
     with patch(
@@ -227,6 +233,7 @@ async def test_step_user(hass: HomeAssistant) -> None:
         assert result["errors"] == {}
 
 
+@pytest.mark.asyncio
 async def test_step_user_only_ip(hass: HomeAssistant) -> None:
     """Test starting a flow by user with valid values but the host is only an ip."""
     with patch(
@@ -249,6 +256,7 @@ async def test_step_user_only_ip(hass: HomeAssistant) -> None:
         assert result["errors"] == {}
 
 
+@pytest.mark.asyncio
 async def test_step_user_unkown_device(hass: HomeAssistant) -> None:
     """Test to start a flow by a user with unknown device."""
 
@@ -271,6 +279,7 @@ async def test_step_user_unkown_device(hass: HomeAssistant) -> None:
         assert result["errors"] == {"base": "invalid_device"}
 
 
+@pytest.mark.asyncio
 async def test_step_devices_without_edit_fetch_all(hass: HomeAssistant) -> None:
     """Test the device step without edit channels and fetchmode all."""
 
@@ -286,6 +295,7 @@ async def test_step_devices_without_edit_fetch_all(hass: HomeAssistant) -> None:
         assert result["title"] == "C.M.I"
 
 
+@pytest.mark.asyncio
 async def test_step_devices_without_edit_fetch_defined(hass: HomeAssistant) -> None:
     """Test the device step without edit channels and fetchmode defined."""
 
@@ -306,8 +316,9 @@ async def test_step_devices_without_edit_fetch_defined(hass: HomeAssistant) -> N
         assert result["title"] == "C.M.I"
 
 
+@pytest.mark.asyncio
 async def test_step_device_with_device_without_io_support(hass: HomeAssistant) -> None:
-    """Test the device step with a device that dont support inputs and outputs."""
+    """Test the device step with a device that don't support inputs and outputs."""
     dummy_device: Device = Device("2", "http://dummy", "", "")
     DATA_OVERRIDE = {"allDevices": [dummy_device]}
 
@@ -341,6 +352,7 @@ async def test_step_device_with_device_without_io_support(hass: HomeAssistant) -
         assert result["errors"] == {}
 
 
+@pytest.mark.asyncio
 async def test_step_devices_with_multiple_devices(hass: HomeAssistant) -> None:
     """Test the device step with multiple devices."""
 
@@ -363,6 +375,7 @@ async def test_step_devices_with_multiple_devices(hass: HomeAssistant) -> None:
         assert result["errors"] == {"base": "invalid_device"}
 
 
+@pytest.mark.asyncio
 async def test_step_devices_with_edit(hass: HomeAssistant) -> None:
     """Test the device step with edit channels."""
 
@@ -377,6 +390,7 @@ async def test_step_devices_with_edit(hass: HomeAssistant) -> None:
     assert result["errors"] == {}
 
 
+@pytest.mark.asyncio
 async def test_step_finish_dynamic_wait(hass: HomeAssistant) -> None:
     """Test the finish step with dynamic waiting."""
 
@@ -396,8 +410,9 @@ async def test_step_finish_dynamic_wait(hass: HomeAssistant) -> None:
         assert mock.call_count == 2
 
 
+@pytest.mark.asyncio
 async def test_step_device_communication_error(hass: HomeAssistant) -> None:
-    """Test the channel step with an communication error."""
+    """Test the channel step with a communication error."""
 
     with patch(
         "ta_cmi.baseApi.BaseAPI._make_request",
@@ -413,6 +428,7 @@ async def test_step_device_communication_error(hass: HomeAssistant) -> None:
     assert result["errors"] == {"base": "device_error"}
 
 
+@pytest.mark.asyncio
 async def test_step_device_unkown_error(hass: HomeAssistant) -> None:
     """Test the channel step with an unexpected error."""
 
@@ -430,6 +446,7 @@ async def test_step_device_unkown_error(hass: HomeAssistant) -> None:
     assert result["errors"] == {"base": "unknown"}
 
 
+@pytest.mark.asyncio
 async def test_step_device_rate_limit_error(hass: HomeAssistant) -> None:
     """Test the channel step with a rate limit error."""
 
@@ -447,6 +464,7 @@ async def test_step_device_rate_limit_error(hass: HomeAssistant) -> None:
     assert result["errors"] == {"base": "rate_limit"}
 
 
+@pytest.mark.asyncio
 async def test_step_channels_edit_only_one(hass: HomeAssistant) -> None:
     """Test the channel step without edit other channels."""
 
@@ -474,6 +492,7 @@ async def test_step_channels_edit_only_one(hass: HomeAssistant) -> None:
         assert result["title"] == "C.M.I"
 
 
+@pytest.mark.asyncio
 async def test_step_channels_edit_more(hass: HomeAssistant) -> None:
     """Test the channel step with edit other channels."""
 
@@ -500,6 +519,7 @@ async def test_step_channels_edit_more(hass: HomeAssistant) -> None:
         assert result["errors"] == {}
 
 
+@pytest.mark.asyncio
 async def test_options_flow_init(hass: HomeAssistant) -> None:
     """Test config flow options."""
     config_entry = MockConfigEntry(
