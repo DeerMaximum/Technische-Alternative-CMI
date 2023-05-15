@@ -1,0 +1,62 @@
+{
+    "config": {
+      "step": {
+        "user": {
+          "title": "C.M.I. einrichten",
+          "data": {
+            "host": "Basis URL der C.M.I. (http://IP)",
+            "username": "Benutzer",
+            "password": "Passwort",
+            "fetch_can_logging": "Benutze zusätzliche Datenquellen bei unterstützen Geräten"
+          }
+        },
+        "devices": {
+          "title": "Knoten einrichten",
+          "description": "Geräte zum Abfragen auswählen",
+          "data": {
+            "devices": "Verbundene Geräte",
+            "edit_channels": "Kanäle bearbeiten?",
+            "fetchmode": "Alle Kanäle abrufen. (Sonst nur konfigurierte Kanäle)"
+          }
+        },
+        "channel": {
+          "title": "Kanal konfigurieren",
+          "description": "Passe den Kanal an",
+          "data": {
+            "node": "Knoten",
+            "id": "Kanal ID",
+            "type": "Typ des Eingangs",
+            "name": "Name des Sensors",
+            "device_class": "Geräteklasse überschreiben (Optional)",
+            "edit_more_channels": "Weitere Kanäle bearbeiten?"
+          }
+        }
+      },
+      "error": {
+        "rate_limit": "Maximalanzahl an Abfragen pro Minute erreicht. Probiere es in einer Minute erneut.",
+        "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+        "device_error": "Fehler bei der Kommunikation mit einem Gerät. Details siehe Logs.",
+        "invalid_device" : "Ungültiges Gerät mit der C.M.I. verbunden. Details siehe Logs.",
+        "unknown": "[%key:common::config_flow::error::unknown%]",
+        "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]"
+      }
+    },
+    "options": {
+      "step": {
+        "init": {
+          "title": "Optionen",
+          "data": {
+            "scan_interval": "Aktualisierungsintervall (Minuten)"
+          }
+        }
+      },
+      "error": {
+        "rate_limit": "Maximalanzahl an Abfragen pro Minute erreicht. Probiere es in einer Minute erneut.",
+        "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+        "device_error": "Fehler bei der Kommunikation mit einem Gerät. Details siehe Logs.",
+        "invalid_device" : "Ungültiges Gerät mit der C.M.I. verbunden. Details siehe Logs.",
+        "unknown": "[%key:common::config_flow::error::unknown%]",
+        "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]"
+      }
+    }
+  }
