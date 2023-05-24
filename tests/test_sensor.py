@@ -2,22 +2,18 @@
 from typing import Any
 from unittest.mock import patch
 
-import pytest
-
-from ta_cmi import InvalidCredentialsError
-
-from pytest_homeassistant_custom_component.common import MockConfigEntry
-
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+from ta_cmi import InvalidCredentialsError
 
 from custom_components.ta_cmi.const import DOMAIN
 
 from . import sleep_mock
-
 
 DUMMY_DEVICE_API_DATA: dict[str, Any] = {
     "Header": {"Version": 5, "Device": "87", "Timestamp": 1630764000},
@@ -89,7 +85,7 @@ ENTRY_DATA: dict[str, Any] = {
                 {
                     "type": "dl-bus",
                     "id": 2,
-                    "name": "DL-Bus 1",
+                    "name": "DL-Bus 2",
                     "device_class": SensorDeviceClass.TEMPERATURE,
                 },
             ],
@@ -111,9 +107,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         return_value=["2"],
     ), patch(
         "ta_cmi.cmi_api.CMIAPI.get_device_data", return_value=DUMMY_DEVICE_API_DATA
-    ), patch(
-        "custom_components.ta_cmi.const.DEVICE_DELAY", 1
-    ), patch(
+    ), patch("custom_components.ta_cmi.const.DEVICE_DELAY", 1), patch(
         "asyncio.sleep", wraps=sleep_mock
     ):
         conf_entry: MockConfigEntry = MockConfigEntry(
@@ -256,11 +250,11 @@ async def test_sensors(hass: HomeAssistant) -> None:
 
         assert entry_dl_bus1.unique_id == "ta-cmi-2-Dl-Bus1"
 
-        state_dl_bus2 = hass.states.get("sensor.dl_bus_1")
-        entry_dl_bus2 = entity_registry.async_get("sensor.dl_bus_1")
+        state_dl_bus2 = hass.states.get("sensor.dl_bus_2")
+        entry_dl_bus2 = entity_registry.async_get("sensor.dl_bus_2")
 
         assert state_dl_bus2.state == "10"
-        assert state_dl_bus2.attributes.get("friendly_name") == "DL-Bus 1"
+        assert state_dl_bus2.attributes.get("friendly_name") == "DL-Bus 2"
         assert (
             state_dl_bus2.attributes.get("device_class")
             == SensorDeviceClass.TEMPERATURE
