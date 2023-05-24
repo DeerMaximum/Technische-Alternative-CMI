@@ -8,5 +8,5 @@
     "iot_class": "local_polling",
     "issue_tracker": "https://github.com/DeerMaximum/Technische-Alternative-CMI/issues",
     "requirements": ["ta-cmi==2.0.2"],
-    "version": "1.7.0"
+    "version": "1.8.0"
 }
