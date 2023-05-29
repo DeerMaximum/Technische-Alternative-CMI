@@ -2,7 +2,7 @@
 from typing import Any
 from unittest.mock import patch
 
-from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
@@ -20,7 +20,7 @@ DUMMY_DEVICE_API_DATA: dict[str, Any] = {
     "Data": {
         "Inputs": [
             {"Number": 1, "AD": "A", "Value": {"Value": 92.2, "Unit": "1"}},
-            {"Number": 2, "AD": "A", "Value": {"Value": 92.3, "Unit": "1"}},
+            {"Number": 2, "AD": "A", "Value": {"Value": 92.3, "Unit": "12"}},
             {"Number": 3, "AD": "A", "Value": {"Value": 1, "Unit": "44"}},
         ],
         "Outputs": [
@@ -128,6 +128,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_i1.state == "92.2"
         assert state_i1.attributes.get("friendly_name") == "Input 1"
         assert state_i1.attributes.get("device_class") == SensorDeviceClass.TEMPERATURE
+        assert state_i1.attributes.get("state_class") == SensorStateClass.MEASUREMENT
 
         assert entry_i1.unique_id == "ta-cmi-2-Input1"
 
@@ -136,7 +137,8 @@ async def test_sensors(hass: HomeAssistant) -> None:
 
         assert state_i2.state == "92.3"
         assert state_i2.attributes.get("friendly_name") == "Node: 2 - Input 2"
-        assert state_i2.attributes.get("device_class") == SensorDeviceClass.TEMPERATURE
+        assert state_i2.attributes.get("device_class") == SensorDeviceClass.ENERGY
+        assert state_i2.attributes.get("state_class") == SensorStateClass.TOTAL
 
         assert entry_i2.unique_id == "ta-cmi-2-Input2"
 
@@ -191,6 +193,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_o5.state == "0"
         assert state_o5.attributes.get("friendly_name") == "Node: 2 - Output 5"
         assert state_o5.attributes.get("device_class") == SensorDeviceClass.TEMPERATURE
+        assert state_o5.attributes.get("state_class") == SensorStateClass.MEASUREMENT
 
         assert entry_o5.unique_id == "ta-cmi-2-Output5"
 
@@ -200,6 +203,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_al1.state == "12.2"
         assert state_al1.attributes.get("friendly_name") == "Analog 1"
         assert state_al1.attributes.get("device_class") == SensorDeviceClass.TEMPERATURE
+        assert state_al1.attributes.get("state_class") == SensorStateClass.MEASUREMENT
 
         assert entry_al1.unique_id == "ta-cmi-2-Analog-Logging1"
 
@@ -209,6 +213,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_al2.state == "67.3"
         assert state_al2.attributes.get("friendly_name") == "Node: 2 - Analog-Logging 2"
         assert state_al2.attributes.get("device_class") == SensorDeviceClass.TEMPERATURE
+        assert state_al2.attributes.get("state_class") == SensorStateClass.MEASUREMENT
 
         assert entry_al2.unique_id == "ta-cmi-2-Analog-Logging2"
 
@@ -238,6 +243,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_dl2.state == "10"
         assert state_dl2.attributes.get("friendly_name") == "Digital 1"
         assert state_dl2.attributes.get("device_class") == SensorDeviceClass.TEMPERATURE
+        assert state_al2.attributes.get("state_class") == SensorStateClass.MEASUREMENT
 
         assert entry_dl2.unique_id == "ta-cmi-2-Digital-Logging2"
 
@@ -258,6 +264,9 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert (
             state_dl_bus2.attributes.get("device_class")
             == SensorDeviceClass.TEMPERATURE
+        )
+        assert (
+            state_dl_bus2.attributes.get("state_class") == SensorStateClass.MEASUREMENT
         )
 
         assert entry_dl_bus2.unique_id == "ta-cmi-2-Dl-Bus2"

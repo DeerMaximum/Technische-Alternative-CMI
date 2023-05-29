@@ -3,7 +3,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_IDENTIFIERS,
@@ -19,16 +23,10 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-
 from ta_cmi import ChannelType
 
 from . import CMIDataUpdateCoordinator
-from .const import (
-    DEFAULT_DEVICE_CLASS_MAP,
-    DEVICE_TYPE,
-    TYPE_SENSOR,
-    DOMAIN,
-)
+from .const import DEFAULT_DEVICE_CLASS_MAP, DEVICE_TYPE, DOMAIN, TYPE_SENSOR
 
 
 async def async_setup_entry(
@@ -44,7 +42,6 @@ async def async_setup_entry(
     device_registry = dr.async_get(hass)
 
     for ent in coordinator.data:
-
         for channel_type in ChannelType:
             if coordinator.data[ent][TYPE_SENSOR].get(channel_type.name, None) is None:
                 continue
@@ -123,7 +120,10 @@ class DeviceChannelSensor(CoordinatorEntity, SensorEntity):
     @property
     def state_class(self) -> str:
         """Return the state class of the sensor."""
-        return "measurement"
+        if self.device_class == SensorDeviceClass.ENERGY:
+            return SensorStateClass.TOTAL
+
+        return SensorStateClass.MEASUREMENT
 
     @property
     def device_info(self) -> DeviceInfo:
