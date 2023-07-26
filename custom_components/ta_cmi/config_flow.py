@@ -39,6 +39,7 @@ from .const import (
     CONF_DEVICES,
     SCAN_INTERVAL,
     DEVICE_TYPE_STRING_MAP,
+    DEVICE_DELAY,
     DOMAIN,
 )
 
@@ -61,14 +62,14 @@ async def fetch_device(device: Device, retry=False) -> None:
     try:
 
         if retry:
-            _LOGGER.debug("Sleep mode for 61 seconds to prevent rate limiting")
-            await asyncio.sleep(61)
+            _LOGGER.debug("Sleep mode for 75 seconds to prevent rate limiting")
+            await asyncio.sleep(DEVICE_DELAY)
             device.set_device_type("DUMMY-NO-IO")
 
         _LOGGER.debug("Try to fetch device type: %s", device.id)
         await device.fetch_type()
-        _LOGGER.debug("Sleep mode for 61 seconds to prevent rate limiting")
-        await asyncio.sleep(61)
+        _LOGGER.debug("Sleep mode for 75 seconds to prevent rate limiting")
+        await asyncio.sleep(DEVICE_DELAY)
 
         _LOGGER.debug("Try to fetch available device channels: %s", device.id)
         await device.update()
@@ -181,8 +182,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         for dev in self.data["allDevices"]:
 
             if len(self.data["allDevices"]) > 1:
-                _LOGGER.debug("Sleep mode for 61 seconds to prevent rate limiting")
-                await asyncio.sleep(61)
+                _LOGGER.debug("Sleep mode for 75 seconds to prevent rate limiting")
+                await asyncio.sleep(DEVICE_DELAY)
 
             try:
                 await fetch_device(dev)
