@@ -215,7 +215,7 @@ async def test_step_user(hass: HomeAssistant) -> None:
         "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
         return_value="2;",
     ), patch(
-        "ta_cmi.cmi_api.CMIAPI._make_request", return_value=DUMMY_DEVICE_API_DATA
+        "ta_cmi.cmi_api.CMIAPI._make_request_get", return_value=DUMMY_DEVICE_API_DATA
     ), patch(
         "asyncio.sleep", wraps=sleep_mock
     ) as sleep_m:
@@ -237,7 +237,7 @@ async def test_step_user_only_ip(hass: HomeAssistant) -> None:
         "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
         return_value="2;",
     ), patch(
-        "ta_cmi.cmi_api.CMIAPI._make_request", return_value=DUMMY_DEVICE_API_DATA
+        "ta_cmi.cmi_api.CMIAPI._make_request_get", return_value=DUMMY_DEVICE_API_DATA
     ), patch(
         "asyncio.sleep", wraps=sleep_mock
     ) as sleep_m:
@@ -260,7 +260,7 @@ async def test_step_user_unkown_device(hass: HomeAssistant) -> None:
         "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
         return_value="2;3;",
     ), patch(
-        "ta_cmi.cmi_api.CMIAPI._make_request",
+        "ta_cmi.cmi_api.CMIAPI._make_request_get",
         return_value=DUMMY_DEVICE_API_DATA_UNKOWN_DEVICE,
     ), patch(
         "asyncio.sleep", wraps=sleep_mock
@@ -354,7 +354,7 @@ async def test_step_devices_with_multiple_devices(hass: HomeAssistant) -> None:
     DATA_OVERRIDE = {"allDevices": [dummy_device, dummy_Device2]}
 
     with patch.object(ConfigFlow, "override_data", DATA_OVERRIDE), patch(
-        "ta_cmi.cmi_api.CMIAPI._make_request",
+        "ta_cmi.cmi_api.CMIAPI._make_request_get",
         return_value=DUMMY_DEVICE_API_DATA_UNKOWN_DEVICE,
     ), patch("asyncio.sleep", wraps=sleep_mock):
         result = await hass.config_entries.flow.async_init(
@@ -405,7 +405,7 @@ async def test_step_device_communication_error(hass: HomeAssistant) -> None:
     """Test the channel step with a communication error."""
 
     with patch(
-        "ta_cmi.cmi_api.CMIAPI._make_request",
+        "ta_cmi.cmi_api.CMIAPI._make_request_get",
         side_effect=ApiError("Could not connect to C.M.I"),
     ), patch("asyncio.sleep", wraps=sleep_mock):
         result = await hass.config_entries.flow.async_init(
@@ -423,7 +423,7 @@ async def test_step_device_unkown_error(hass: HomeAssistant) -> None:
     """Test the channel step with an unexpected error."""
 
     with patch(
-        "ta_cmi.cmi_api.CMIAPI._make_request",
+        "ta_cmi.cmi_api.CMIAPI._make_request_get",
         side_effect=ApiError("Unknown error"),
     ), patch("asyncio.sleep", wraps=sleep_mock):
         result = await hass.config_entries.flow.async_init(
@@ -441,7 +441,7 @@ async def test_step_device_rate_limit_error(hass: HomeAssistant) -> None:
     """Test the channel step with a rate limit error."""
 
     with patch(
-        "ta_cmi.cmi_api.CMIAPI._make_request",
+        "ta_cmi.cmi_api.CMIAPI._make_request_get",
         side_effect=RateLimitError("RateLimit"),
     ), patch("asyncio.sleep", wraps=sleep_mock):
         result = await hass.config_entries.flow.async_init(
