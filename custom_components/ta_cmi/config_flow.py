@@ -2,26 +2,25 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import timedelta
 import time
 from typing import Any
-from datetime import timedelta
 
 from aiohttp import ClientSession
-
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
-import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+import homeassistant.helpers.config_validation as cv
 from ta_cmi import (
     CMI,
     ApiError,
     Device,
     InvalidCredentialsError,
-    RateLimitError,
     InvalidDeviceError,
+    RateLimitError,
 )
 import voluptuous as vol
 
@@ -35,12 +34,12 @@ from .const import (
     CONF_DEVICE_FETCH_MODE,
     CONF_DEVICE_ID,
     CONF_DEVICE_TYPE,
-    CONF_SCAN_INTERVAL,
     CONF_DEVICES,
-    SCAN_INTERVAL,
-    DEVICE_TYPE_STRING_MAP,
+    CONF_SCAN_INTERVAL,
     DEVICE_DELAY,
+    DEVICE_TYPE_STRING_MAP,
     DOMAIN,
+    SCAN_INTERVAL,
 )
 
 
@@ -60,7 +59,6 @@ async def validate_login(data: dict[str, Any], session: ClientSession) -> Any:
 async def fetch_device(device: Device, retry=False) -> None:
     """Fetch the device data to display."""
     try:
-
         if retry:
             _LOGGER.debug("Sleep mode for 75 seconds to prevent rate limiting")
             await asyncio.sleep(DEVICE_DELAY)
@@ -103,7 +101,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, Any] = {}
 
         if user_input is not None:
-
             if not user_input[CONF_HOST].startswith("http://"):
                 user_input[CONF_HOST] = "http://" + user_input[CONF_HOST]
 
@@ -151,7 +148,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self.config[CONF_DEVICES] = []
 
             for dev_id in self.data[CONF_DEVICES]:
-
                 device_type: str = ""
 
                 for dev in self.data["allDevices"]:
@@ -180,7 +176,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         devices_list: dict[int, str] = {}
 
         for dev in self.data["allDevices"]:
-
             if len(self.data["allDevices"]) > 1:
                 _LOGGER.debug("Sleep mode for 75 seconds to prevent rate limiting")
                 await asyncio.sleep(DEVICE_DELAY)
@@ -202,6 +197,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             except InvalidDeviceError:
                 errors["base"] = "invalid_device"
                 _LOGGER.warning("Invalid device: %s", dev.id)
+            except Exception as err:  # pylint: disable=broad-except
+                _LOGGER.exception("Unexpected exception: %s", err)
+                errors["base"] = "unknown"
             else:
                 devices_list[dev.id] = str(dev)
 
