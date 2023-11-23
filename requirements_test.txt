@@ -1,4 +1,4 @@
-ta-cmi==2.2.0
+ta-cmi==3.0.0
 
 #Test will fail witout
 aiohttp_cors
