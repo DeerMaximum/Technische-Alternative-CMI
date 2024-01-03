@@ -29,16 +29,43 @@ Currently supported devices:
 
 ### Step 1:
 
-<br>
-
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=DeerMaximum&repository=Technische-Alternative-CMI&category=integration)
 
 ### Step 2 (**Don't forget**):
 
 1. Click install.
 2. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Technische Alternative".
+3. Start the config flow.
 
 {% endif %}
+
+### Step 3:
+
+> **Note**
+> When saving the configuration, there may be a wait time due to the rate limit.
+> 
+#### C.M.I. configuration
+
+In the first step of the config flow, set up the connection to C.M.I.. To do this, enter the address, user name and password.
+
+#### Device selection
+
+In the 2nd step, select the devices from which the data is to be read.
+For this purpose, a list of all devices and details about them are retrieved at the start of the step.
+This can take several minutes due to a rate limit of one request per minute.
+Once the data has been retrieved, select the supported devices from the list.
+
+If to configure the channels individually, continue with the next step, otherwise the setup is finished.
+
+#### Channel configuration
+
+In this step, individual channels can be customized, including the following properties:
+
+* Name of the sensor (can also be changed to HA afterward)
+* Device class
+
+To customize a channel, select the device,
+on which the channel is located, enter the channel number and finally select the channel type.
 
 ## Supported data types
 
