@@ -1,35 +1,29 @@
 """The Technische Alternative C.M.I. integration."""
 from __future__ import annotations
 
-from types import MappingProxyType
-
 import asyncio
-from typing import Any
-
 from datetime import timedelta
+import time
+from types import MappingProxyType
+from typing import Any
 
 from async_timeout import timeout
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    CONF_HOST,
-    CONF_PASSWORD,
-    CONF_USERNAME,
-    Platform,
-)
+from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from ta_cmi import ApiError, Device, InvalidCredentialsError, RateLimitError, CMIAPI
+from ta_cmi import CMIAPI, ApiError, Device, InvalidCredentialsError, RateLimitError
 
 from .const import (
     _LOGGER,
     CONF_DEVICE_ID,
     CONF_DEVICE_TYPE,
     CONF_DEVICES,
+    CONF_SCAN_INTERVAL,
     DEVICE_DELAY,
     DOMAIN,
     SCAN_INTERVAL,
-    CONF_SCAN_INTERVAL,
 )
 from .device_parser import DeviceParser
 
@@ -101,9 +95,7 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
 
         for dev_raw in devices:
             device_id: str = dev_raw[CONF_DEVICE_ID]
-            device: Device = Device(
-                device_id, cmi_api
-            )
+            device: Device = Device(device_id, cmi_api)
 
             if CONF_DEVICE_TYPE in dev_raw:
                 device.set_device_type(dev_raw[CONF_DEVICE_TYPE])
@@ -114,6 +106,16 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
         _LOGGER.debug("Used update interval: %s", update_interval)
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
+
+    @staticmethod
+    async def custom_sleep(delay: int) -> None:
+        """Custom sleep function to prevent Home Assistant from canceling."""
+        start = time.time()
+        try:
+            await asyncio.sleep(delay)
+        except CancelledError:
+            elapsed = time.time() - start
+            await asyncio.sleep(delay - elapsed)
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Update data."""
@@ -132,8 +134,8 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
                 return_data[device.id][CONF_HOST] = self.host
 
                 if len(self.devices) != 1:
-                    _LOGGER.debug("Wait for 61 seconds to prevent rate limiting")
-                    await asyncio.sleep(DEVICE_DELAY)
+                    _LOGGER.debug("Wait for 75 seconds to prevent rate limiting")
+                    await self.custom_sleep(DEVICE_DELAY)
 
             return return_data
         except (InvalidCredentialsError, RateLimitError, ApiError) as err:
