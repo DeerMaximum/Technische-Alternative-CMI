@@ -1,8 +1,7 @@
-ta-cmi==3.2.0
+ta-cmi==3.3.0
 
 #Test will fail witout
 aiohttp_cors
 
-pytest-homeassistant-custom-component==0.13.89
-setuptools
+pytest-homeassistant-custom-component==0.13.114
 async_timeout~=4.0.3

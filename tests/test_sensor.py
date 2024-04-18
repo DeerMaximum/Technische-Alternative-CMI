@@ -11,6 +11,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from ta_cmi import InvalidCredentialsError
 
+from custom_components.ta_cmi import CMIDataUpdateCoordinator
 from custom_components.ta_cmi.const import DOMAIN
 
 from . import sleep_mock
@@ -109,6 +110,8 @@ async def test_sensors(hass: HomeAssistant) -> None:
         "ta_cmi.cmi_api.CMIAPI.get_device_data", return_value=DUMMY_DEVICE_API_DATA
     ), patch("custom_components.ta_cmi.const.DEVICE_DELAY", 1), patch(
         "asyncio.sleep", wraps=sleep_mock
+    ), patch.object(
+        CMIDataUpdateCoordinator, "_coe_sleep_function", sleep_mock
     ):
         conf_entry: MockConfigEntry = MockConfigEntry(
             domain=DOMAIN, title="NINA", data=ENTRY_DATA
@@ -278,7 +281,9 @@ async def test_sensors_invalid_credentials(hass: HomeAssistant) -> None:
     with patch(
         "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
         side_effect=InvalidCredentialsError("Invalid API key"),
-    ), patch("asyncio.sleep", wraps=sleep_mock):
+    ), patch("asyncio.sleep", wraps=sleep_mock), patch.object(
+        CMIDataUpdateCoordinator, "_coe_sleep_function", sleep_mock
+    ):
         conf_entry: MockConfigEntry = MockConfigEntry(
             domain=DOMAIN, title="NINA", data=ENTRY_DATA
         )
