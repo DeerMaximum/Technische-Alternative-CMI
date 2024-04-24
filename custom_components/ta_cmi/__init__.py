@@ -97,7 +97,9 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
 
         for dev_raw in devices:
             device_id: str = dev_raw[CONF_DEVICE_ID]
-            device: Device = Device(device_id, cmi_api, self._coe_sleep_function)
+            device: Device = Device(
+                device_id, cmi_api, CMIDataUpdateCoordinator._coe_sleep_function
+            )
 
             if CONF_DEVICE_TYPE in dev_raw:
                 device.set_device_type(dev_raw[CONF_DEVICE_TYPE])
