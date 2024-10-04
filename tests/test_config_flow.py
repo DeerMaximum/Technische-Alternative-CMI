@@ -397,7 +397,7 @@ async def test_step_finish_dynamic_wait(hass: HomeAssistant) -> None:
         assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
         assert result["title"] == "C.M.I"
 
-        assert mock.call_count == 2
+        mock.assert_called_once()
 
 
 @pytest.mark.asyncio
