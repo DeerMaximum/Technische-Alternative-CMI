@@ -4,4 +4,4 @@ ta-cmi==3.3.0
 aiohttp_cors
 
 pytest-homeassistant-custom-component==0.13.171
-async_timeout~=5.0.0
+async_timeout~=5.0.1
