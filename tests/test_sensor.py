@@ -1,4 +1,5 @@
 """Test the Technische Alternative C.M.I. sensor."""
+import copy
 from typing import Any
 from unittest.mock import patch
 
@@ -12,7 +13,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from ta_cmi import InvalidCredentialsError
 
 from custom_components.ta_cmi import CMIDataUpdateCoordinator
-from custom_components.ta_cmi.const import DOMAIN
+from custom_components.ta_cmi.const import DOMAIN, NEW_UID
 
 from . import sleep_mock
 
@@ -53,6 +54,7 @@ ENTRY_DATA: dict[str, Any] = {
     "host": "http://192.168.2.101",
     "username": "admin",
     "password": "admin",
+    "new_uid": True,
     "devices": [
         {
             "id": "2",
@@ -133,7 +135,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_i1.attributes.get("device_class") == SensorDeviceClass.TEMPERATURE
         assert state_i1.attributes.get("state_class") == SensorStateClass.MEASUREMENT
 
-        assert entry_i1.unique_id == "ta-cmi-2-Input1"
+        assert entry_i1.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Input1"
 
         state_i2 = hass.states.get("sensor.node_2_input_2")
         entry_i2 = entity_registry.async_get("sensor.node_2_input_2")
@@ -143,7 +145,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_i2.attributes.get("device_class") == SensorDeviceClass.ENERGY
         assert state_i2.attributes.get("state_class") == SensorStateClass.TOTAL
 
-        assert entry_i2.unique_id == "ta-cmi-2-Input2"
+        assert entry_i2.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Input2"
 
         state_i3 = hass.states.get("binary_sensor.node_2_input_3")
         entry_i3 = entity_registry.async_get("binary_sensor.node_2_input_3")
@@ -152,7 +154,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_i3.attributes.get("friendly_name") == "Node: 2 - Input 3"
         assert state_i3.attributes.get("device_class") is None
 
-        assert entry_i3.unique_id == "ta-cmi-2-Input3"
+        assert entry_i3.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Input3"
 
         state_o1 = hass.states.get("binary_sensor.output_1")
         entry_o1 = entity_registry.async_get("binary_sensor.output_1")
@@ -161,7 +163,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_o1.attributes.get("friendly_name") == "Output 1"
         assert state_o1.attributes.get("device_class") == SensorDeviceClass.GAS
 
-        assert entry_o1.unique_id == "ta-cmi-2-Output1"
+        assert entry_o1.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Output1"
 
         state_o2 = hass.states.get("binary_sensor.node_2_output_2")
         entry_o2 = entity_registry.async_get("binary_sensor.node_2_output_2")
@@ -170,7 +172,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_o2.attributes.get("friendly_name") == "Node: 2 - Output 2"
         assert state_o2.attributes.get("device_class") is None
 
-        assert entry_o2.unique_id == "ta-cmi-2-Output2"
+        assert entry_o2.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Output2"
 
         state_o3 = hass.states.get("binary_sensor.node_2_output_3")
         entry_o3 = entity_registry.async_get("binary_sensor.node_2_output_3")
@@ -179,7 +181,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_o3.attributes.get("friendly_name") == "Node: 2 - Output 3"
         assert state_o3.attributes.get("device_class") is None
 
-        assert entry_o3.unique_id == "ta-cmi-2-Output3"
+        assert entry_o3.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Output3"
 
         state_o4 = hass.states.get("binary_sensor.node_2_output_4")
         entry_o4 = entity_registry.async_get("binary_sensor.node_2_output_4")
@@ -188,7 +190,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_o4.attributes.get("friendly_name") == "Node: 2 - Output 4"
         assert state_o4.attributes.get("device_class") is None
 
-        assert entry_o4.unique_id == "ta-cmi-2-Output4"
+        assert entry_o4.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Output4"
 
         state_o5 = hass.states.get("sensor.node_2_output_5")
         entry_o5 = entity_registry.async_get("sensor.node_2_output_5")
@@ -198,7 +200,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_o5.attributes.get("device_class") == SensorDeviceClass.TEMPERATURE
         assert state_o5.attributes.get("state_class") == SensorStateClass.MEASUREMENT
 
-        assert entry_o5.unique_id == "ta-cmi-2-Output5"
+        assert entry_o5.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Output5"
 
         state_al1 = hass.states.get("sensor.analog_1")
         entry_al1 = entity_registry.async_get("sensor.analog_1")
@@ -208,7 +210,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_al1.attributes.get("device_class") == SensorDeviceClass.TEMPERATURE
         assert state_al1.attributes.get("state_class") == SensorStateClass.MEASUREMENT
 
-        assert entry_al1.unique_id == "ta-cmi-2-Analog-Logging1"
+        assert entry_al1.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Analog-Logging1"
 
         state_al2 = hass.states.get("sensor.node_2_analog_logging_2")
         entry_al2 = entity_registry.async_get("sensor.node_2_analog_logging_2")
@@ -218,7 +220,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_al2.attributes.get("device_class") == SensorDeviceClass.TEMPERATURE
         assert state_al2.attributes.get("state_class") == SensorStateClass.MEASUREMENT
 
-        assert entry_al2.unique_id == "ta-cmi-2-Analog-Logging2"
+        assert entry_al2.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Analog-Logging2"
 
         state_al3 = hass.states.get("binary_sensor.node_2_analog_logging_3")
         entry_al3 = entity_registry.async_get("binary_sensor.node_2_analog_logging_3")
@@ -227,7 +229,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_al3.attributes.get("friendly_name") == "Node: 2 - Analog-Logging 3"
         assert state_al3.attributes.get("device_class") is None
 
-        assert entry_al3.unique_id == "ta-cmi-2-Analog-Logging3"
+        assert entry_al3.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Analog-Logging3"
 
         state_dl1 = hass.states.get("binary_sensor.node_2_digital_logging_1")
         entry_dl1 = entity_registry.async_get("binary_sensor.node_2_digital_logging_1")
@@ -238,7 +240,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         )
         assert state_dl1.attributes.get("device_class") is None
 
-        assert entry_dl1.unique_id == "ta-cmi-2-Digital-Logging1"
+        assert entry_dl1.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Digital-Logging1"
 
         state_dl2 = hass.states.get("sensor.digital_1")
         entry_dl2 = entity_registry.async_get("sensor.digital_1")
@@ -248,7 +250,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_dl2.attributes.get("device_class") == SensorDeviceClass.TEMPERATURE
         assert state_al2.attributes.get("state_class") == SensorStateClass.MEASUREMENT
 
-        assert entry_dl2.unique_id == "ta-cmi-2-Digital-Logging2"
+        assert entry_dl2.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Digital-Logging2"
 
         state_dl_bus1 = hass.states.get("binary_sensor.node_2_dl_bus_1")
         entry_dl_bus1 = entity_registry.async_get("binary_sensor.node_2_dl_bus_1")
@@ -257,7 +259,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_dl_bus1.attributes.get("friendly_name") == "Node: 2 - Dl-Bus 1"
         assert state_dl_bus1.attributes.get("device_class") is None
 
-        assert entry_dl_bus1.unique_id == "ta-cmi-2-Dl-Bus1"
+        assert entry_dl_bus1.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Dl-Bus1"
 
         state_dl_bus2 = hass.states.get("sensor.dl_bus_2")
         entry_dl_bus2 = entity_registry.async_get("sensor.dl_bus_2")
@@ -272,7 +274,38 @@ async def test_sensors(hass: HomeAssistant) -> None:
             state_dl_bus2.attributes.get("state_class") == SensorStateClass.MEASUREMENT
         )
 
-        assert entry_dl_bus2.unique_id == "ta-cmi-2-Dl-Bus2"
+        assert entry_dl_bus2.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Dl-Bus2"
+
+
+@pytest.mark.asyncio
+async def test_sensors_create_old_id(hass: HomeAssistant) -> None:
+    """Test the creation of sensors with the old id if the new_uid flag is not set."""
+    with patch(
+        "ta_cmi.cmi_api.CMIAPI.get_devices_ids",
+        return_value=["2"],
+    ), patch(
+        "ta_cmi.cmi_api.CMIAPI.get_device_data", return_value=DUMMY_DEVICE_API_DATA
+    ), patch("custom_components.ta_cmi.const.DEVICE_DELAY", 1), patch(
+        "asyncio.sleep", wraps=sleep_mock
+    ), patch.object(
+        CMIDataUpdateCoordinator, "_coe_sleep_function", sleep_mock
+    ):
+        old_id_entry = copy.deepcopy(ENTRY_DATA)
+        old_id_entry[NEW_UID] = False
+
+        conf_entry: MockConfigEntry = MockConfigEntry(
+            domain=DOMAIN, title="NINA", data=old_id_entry
+        )
+
+        entity_registry: er = er.async_get(hass)
+        conf_entry.add_to_hass(hass)
+
+        await hass.config_entries.async_setup(conf_entry.entry_id)
+        await hass.async_block_till_done()
+
+        assert conf_entry.state == ConfigEntryState.LOADED
+        entry_i1 = entity_registry.async_get("sensor.input_1")
+        assert entry_i1.unique_id == "ta-cmi-2-Input1"
 
 
 @pytest.mark.asyncio

@@ -26,7 +26,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from ta_cmi import ChannelType
 
 from . import CMIDataUpdateCoordinator
-from .const import DEFAULT_DEVICE_CLASS_MAP, DEVICE_TYPE, DOMAIN, TYPE_SENSOR
+from .const import DEFAULT_DEVICE_CLASS_MAP, DEVICE_TYPE, DOMAIN, NEW_UID, TYPE_SENSOR
 
 
 async def async_setup_entry(
@@ -39,6 +39,11 @@ async def async_setup_entry(
 
     entities: list[DeviceChannelSensor] = []
 
+    entry_id: None | str = None
+
+    if config_entry.data.get(NEW_UID, False):
+        entry_id = config_entry.entry_id
+
     device_registry = dr.async_get(hass)
 
     for ent in coordinator.data:
@@ -49,7 +54,7 @@ async def async_setup_entry(
             available_channels = coordinator.data[ent][TYPE_SENSOR][channel_type.name]
             for ch_id in available_channels:
                 channel: DeviceChannelSensor = DeviceChannelSensor(
-                    coordinator, ent, ch_id, channel_type.name
+                    coordinator, ent, ch_id, channel_type.name, entry_id
                 )
 
                 entities.append(channel)
@@ -76,6 +81,7 @@ class DeviceChannelSensor(CoordinatorEntity, SensorEntity):
         node_id: str,
         channel_id: str,
         input_type: ChannelType,
+        entry_id: str | None,
     ) -> None:
         """Initialize."""
         super().__init__(coordinator)
@@ -92,7 +98,12 @@ class DeviceChannelSensor(CoordinatorEntity, SensorEntity):
         mode: str = channel_raw["mode"]
 
         self._attr_name: str = name or f"Node: {self._node_id} - {mode} {self._id}"
-        self._attr_unique_id: str = f"ta-cmi-{self._node_id}-{mode}{self._id}"
+        if entry_id:
+            self._attr_unique_id: str = (
+                f"ta-cmi-{entry_id}-{self._node_id}-{mode}{self._id}"
+            )
+        else:
+            self._attr_unique_id: str = f"ta-cmi-{self._node_id}-{mode}{self._id}"
 
     @property
     def native_value(self) -> str:
