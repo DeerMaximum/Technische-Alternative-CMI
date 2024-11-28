@@ -1,11 +1,12 @@
 """C.M.I binary sensor platform."""
 from __future__ import annotations
 
+import copy
 from typing import Any
 
 from homeassistant.components.binary_sensor import (
-    BinarySensorEntity,
     BinarySensorDeviceClass,
+    BinarySensorEntity,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -22,15 +23,10 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-
 from ta_cmi import ChannelType
 
 from . import CMIDataUpdateCoordinator
-from .const import (
-    DEVICE_TYPE,
-    TYPE_BINARY,
-    DOMAIN,
-)
+from .const import DEVICE_TYPE, DOMAIN, NEW_UID, TYPE_BINARY
 
 
 async def async_setup_entry(
@@ -43,10 +39,14 @@ async def async_setup_entry(
 
     entities: list[DeviceChannelBinary] = []
 
+    entry_id: None | str = None
+
+    if config_entry.data.get(NEW_UID, False):
+        entry_id = config_entry.entry_id
+
     device_registry = dr.async_get(hass)
 
     for ent in coordinator.data:
-
         for channel_type in ChannelType:
             if coordinator.data[ent][TYPE_BINARY].get(channel_type.name, None) is None:
                 continue
@@ -54,7 +54,7 @@ async def async_setup_entry(
             available_channels = coordinator.data[ent][TYPE_BINARY][channel_type.name]
             for ch_id in available_channels:
                 channel: DeviceChannelBinary = DeviceChannelBinary(
-                    coordinator, ent, ch_id, channel_type.name
+                    coordinator, ent, ch_id, channel_type.name, entry_id
                 )
 
                 entities.append(channel)
@@ -81,6 +81,7 @@ class DeviceChannelBinary(CoordinatorEntity, BinarySensorEntity):
         node_id: str,
         channel_id: str,
         input_type: ChannelType,
+        entry_id: str | None,
     ) -> None:
         """Initialize."""
         super().__init__(coordinator)
@@ -97,7 +98,13 @@ class DeviceChannelBinary(CoordinatorEntity, BinarySensorEntity):
         mode: str = channel_raw["mode"]
 
         self._attr_name: str = name or f"Node: {self._node_id} - {mode} {self._id}"
-        self._attr_unique_id: str = f"ta-cmi-{self._node_id}-{mode}{self._id}"
+
+        if entry_id:
+            self._attr_unique_id: str = (
+                f"ta-cmi-{entry_id}-{self._node_id}-{mode}{self._id}"
+            )
+        else:
+            self._attr_unique_id: str = f"ta-cmi-{self._node_id}-{mode}{self._id}"
 
     @property
     def is_on(self) -> bool:

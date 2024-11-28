@@ -39,6 +39,7 @@ from .const import (
     DEVICE_DELAY,
     DEVICE_TYPE_STRING_MAP,
     DOMAIN,
+    NEW_UID,
     SCAN_INTERVAL,
 )
 
@@ -167,6 +168,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_CHANNELS: [],
                 }
                 self.config[CONF_DEVICES].append(device)
+                self.config[NEW_UID] = True
 
             if not user_input["edit_channels"]:
                 return await self.async_step_finish()

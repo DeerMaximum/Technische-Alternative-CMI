@@ -27,6 +27,7 @@ from custom_components.ta_cmi.const import (
     CONF_DEVICES,
     CONF_SCAN_INTERVAL,
     DOMAIN,
+    NEW_UID,
 )
 
 from . import sleep_mock
@@ -117,6 +118,7 @@ DUMMY_CONFIG_ENTRY: dict[str, Any] = {
     CONF_HOST: "http://localhost",
     CONF_USERNAME: "test",
     CONF_PASSWORD: "test",
+    NEW_UID: True,
     CONF_DEVICES: [
         {
             CONF_DEVICE_ID: "2",
@@ -135,6 +137,7 @@ DUMMY_CONFIG_ENTRY_UPDATED: dict[str, Any] = {
     CONF_HOST: "http://localhost",
     CONF_USERNAME: "test",
     CONF_PASSWORD: "test",
+    NEW_UID: True,
     CONF_SCAN_INTERVAL: 15,
     CONF_DEVICES: [
         {
@@ -272,6 +275,21 @@ async def test_step_user_unkown_device(hass: HomeAssistant) -> None:
         assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
         assert result["step_id"] == "devices"
         assert result["errors"] == {"base": "invalid_device"}
+
+
+@pytest.mark.asyncio
+async def test_new_uid_flag_set(hass: HomeAssistant) -> None:
+    """Test if the config flow sets the new uid flag."""
+    with patch("asyncio.sleep", wraps=sleep_mock):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": "devices"},
+            data=DUMMY_DEVICE_DATA_NO_CHANNEL_FETCH_ALL,
+        )
+
+        assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+        assert result["title"] == "C.M.I"
+        assert result["data"][NEW_UID] == True
 
 
 @pytest.mark.asyncio

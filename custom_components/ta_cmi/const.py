@@ -78,3 +78,5 @@ DEVICE_TYPE_STRING_MAP: dict[ChannelType, str] = {
     ChannelType.ANALOG_LOGGING: "analog logging",
     ChannelType.DIGITAL_LOGGING: "digital logging",
 }
+
+NEW_UID = "new_uid"
