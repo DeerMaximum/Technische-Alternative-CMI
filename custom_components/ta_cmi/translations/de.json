@@ -12,7 +12,7 @@
         },
         "devices": {
           "title": "Knoten einrichten",
-          "description": "Geräte zum Abfragen auswählen",
+          "description": "Geräte zum Abfragen aus der Liste auswählen",
           "data": {
             "devices": "Verbundene Geräte",
             "edit_channels": "Kanäle bearbeiten?",
