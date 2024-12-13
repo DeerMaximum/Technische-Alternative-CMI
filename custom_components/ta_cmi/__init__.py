@@ -134,7 +134,9 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
                 return_data[device.id][CONF_HOST] = self.host
 
                 if len(self.devices) != 1:
-                    _LOGGER.debug("Wait for 75 seconds to prevent rate limiting")
+                    _LOGGER.debug(
+                        f"Sleep mode for {DEVICE_DELAY} seconds to prevent rate limiting"
+                    )
                     await self.custom_sleep(DEVICE_DELAY)
 
             return return_data

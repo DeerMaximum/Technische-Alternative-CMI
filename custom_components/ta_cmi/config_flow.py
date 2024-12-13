@@ -48,7 +48,11 @@ async def validate_login(data: dict[str, Any], session: ClientSession) -> Any:
     """Validate the user input allows us to connect."""
     try:
         cmi: CMI = CMI(
-            data[CONF_HOST], data[CONF_USERNAME], data[CONF_PASSWORD], session
+            data[CONF_HOST],
+            data[CONF_USERNAME],
+            data[CONF_PASSWORD],
+            session,
+            rate_limit_wait_time=DEVICE_DELAY,
         )
         return await cmi.get_devices()
     except InvalidCredentialsError as err:
@@ -61,13 +65,15 @@ async def fetch_device(device: Device, retry=False) -> None:
     """Fetch the device data to display."""
     try:
         if retry:
-            _LOGGER.debug("Sleep mode for 75 seconds to prevent rate limiting")
+            _LOGGER.debug(
+                f"Sleep mode for {DEVICE_DELAY} seconds to prevent rate limiting"
+            )
             await asyncio.sleep(DEVICE_DELAY)
             device.set_device_type("DUMMY-NO-IO")
 
         _LOGGER.debug("Try to fetch device type: %s", device.id)
         await device.fetch_type()
-        _LOGGER.debug("Sleep mode for 75 seconds to prevent rate limiting")
+        _LOGGER.debug(f"Sleep mode for {DEVICE_DELAY} seconds to prevent rate limiting")
         await asyncio.sleep(DEVICE_DELAY)
 
         _LOGGER.debug("Try to fetch available device channels: %s", device.id)
@@ -179,7 +185,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         for dev in self.data["allDevices"]:
             if len(self.data["allDevices"]) > 1:
-                _LOGGER.debug("Sleep mode for 75 seconds to prevent rate limiting")
+                _LOGGER.debug(
+                    f"Sleep mode for {DEVICE_DELAY} seconds to prevent rate limiting"
+                )
                 await asyncio.sleep(DEVICE_DELAY)
 
             try:
@@ -278,8 +286,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         # Wait to prevent rate limiting from being triggered.
         end_time = time.time()
         time_lapsed = end_time - self.start_time
-        if time_lapsed <= 60:
-            await asyncio.sleep(60 - time_lapsed)
+        if time_lapsed <= DEVICE_DELAY:
+            await asyncio.sleep(DEVICE_DELAY - time_lapsed)
         return self.async_create_entry(title="C.M.I", data=self.config)
 
     @staticmethod
