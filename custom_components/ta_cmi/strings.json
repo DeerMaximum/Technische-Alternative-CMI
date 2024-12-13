@@ -12,7 +12,7 @@
       },
       "devices": {
         "title": "Set up Nodes",
-        "description": "Select devices to monitor",
+        "description": "Select devices to monitor from the list below",
         "data": {
           "devices": "Connected devices",
           "edit_channels": "Edit channels?",

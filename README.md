@@ -54,6 +54,8 @@ In the 2nd step, select the devices from which the data is to be read.
 For this purpose, a list of all devices and details about them are retrieved at the start of the step.
 This can take several minutes due to a rate limit of one request per minute.
 Once the data has been retrieved, select the supported devices from the list.
+If an error occurs during this query, the devices may be missing from the list. 
+Depending on the type of error, you should try again after a few minutes.
 
 If to configure the channels individually, continue with the next step, otherwise the setup is finished.
 
