@@ -124,7 +124,7 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
             for device in self.devices:
                 _LOGGER.debug("Try to update device: %s", device.id)
 
-                async with timeout(70):
+                async with timeout(DEVICE_DELAY + 5):
                     await device.update()
 
                 parser: DeviceParser = DeviceParser(device, self.devices_raw[device.id])
