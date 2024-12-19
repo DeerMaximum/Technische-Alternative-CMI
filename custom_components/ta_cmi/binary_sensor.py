@@ -1,7 +1,6 @@
 """C.M.I binary sensor platform."""
 from __future__ import annotations
 
-import copy
 from typing import Any
 
 from homeassistant.components.binary_sensor import (

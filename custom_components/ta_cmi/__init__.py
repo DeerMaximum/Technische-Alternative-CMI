@@ -4,7 +4,6 @@ from __future__ import annotations
 import asyncio
 from datetime import timedelta
 import time
-from types import MappingProxyType
 from typing import Any
 
 from async_timeout import timeout
@@ -113,7 +112,7 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
         start = time.time()
         try:
             await asyncio.sleep(delay)
-        except CancelledError:
+        except asyncio.CancelledError:
             elapsed = time.time() - start
             await asyncio.sleep(delay - elapsed)
 

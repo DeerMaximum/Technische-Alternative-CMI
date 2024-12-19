@@ -1,9 +1,10 @@
 """Parser to parse device data."""
 from __future__ import annotations
+
 from typing import Any
 
 from homeassistant.const import CONF_API_VERSION, STATE_OFF, STATE_ON
-from ta_cmi import Channel, Device, ChannelType
+from ta_cmi import Channel, ChannelType, Device
 
 from .const import (
     CONF_CHANNELS,
@@ -12,10 +13,10 @@ from .const import (
     CONF_CHANNELS_NAME,
     CONF_CHANNELS_TYPE,
     CONF_DEVICE_FETCH_MODE,
-    TYPE_BINARY,
-    TYPE_SENSOR,
     DEVICE_TYPE,
     DEVICE_TYPE_STRING_MAP,
+    TYPE_BINARY,
+    TYPE_SENSOR,
 )
 
 
