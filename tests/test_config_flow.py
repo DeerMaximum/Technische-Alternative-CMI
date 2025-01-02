@@ -133,8 +133,29 @@ DUMMY_ENTRY_CHANGE: dict[str, Any] = {
     CONF_SCAN_INTERVAL: 15,
 }
 
+DUMMY_ENTRY_CHANGE_IP: dict[str, Any] = {
+    CONF_SCAN_INTERVAL: 15,
+    CONF_HOST: "http://localhost2"
+}
+
 DUMMY_CONFIG_ENTRY_UPDATED: dict[str, Any] = {
     CONF_HOST: "http://localhost",
+    CONF_USERNAME: "test",
+    CONF_PASSWORD: "test",
+    NEW_UID: True,
+    CONF_SCAN_INTERVAL: 15,
+    CONF_DEVICES: [
+        {
+            CONF_DEVICE_ID: "2",
+            CONF_DEVICE_FETCH_MODE: "all",
+            CONF_DEVICE_TYPE: "UVR16x2",
+            CONF_CHANNELS: [],
+        }
+    ],
+}
+
+DUMMY_CONFIG_ENTRY_UPDATED_IP: dict[str, Any] = {
+    CONF_HOST: "http://localhost2",
     CONF_USERNAME: "test",
     CONF_PASSWORD: "test",
     NEW_UID: True,
@@ -526,8 +547,8 @@ async def test_step_channels_edit_more(hass: HomeAssistant) -> None:
 
 
 @pytest.mark.asyncio
-async def test_options_flow_init(hass: HomeAssistant) -> None:
-    """Test config flow options."""
+async def test_options_flow_init_no_ip(hass: HomeAssistant) -> None:
+    """Test config flow options with no ip change."""
 
     config_entry = MockConfigEntry(
         domain=DOMAIN,
@@ -552,3 +573,133 @@ async def test_options_flow_init(hass: HomeAssistant) -> None:
 
         assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
         assert dict(config_entry.options) == DUMMY_CONFIG_ENTRY_UPDATED
+
+@pytest.mark.asyncio
+async def test_options_flow_init(hass: HomeAssistant) -> None:
+    """Test config flow options with ip change."""
+    config_entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="C.M.I",
+        data=DUMMY_CONFIG_ENTRY,
+    )
+    config_entry.add_to_hass(hass)
+
+    with patch("custom_components.ta_cmi.async_setup_entry", return_value=True), patch(
+            "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
+            return_value="2;",
+    ), patch(
+        "ta_cmi.cmi_api.CMIAPI._make_request_get", return_value=DUMMY_DEVICE_API_DATA
+    ), patch(
+        "asyncio.sleep", wraps=sleep_mock
+    ):
+        result = await hass.config_entries.options.async_init(config_entry.entry_id)
+
+        await hass.config_entries.async_setup(config_entry.entry_id)
+        await hass.async_block_till_done()
+
+        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["step_id"] == "init"
+
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            user_input=DUMMY_ENTRY_CHANGE_IP,
+        )
+
+        assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+        assert dict(config_entry.options) == DUMMY_CONFIG_ENTRY_UPDATED_IP
+
+@pytest.mark.asyncio
+async def test_options_flow_ip_change_invalid_auth(hass: HomeAssistant) -> None:
+    """Test config flow options with ip change and invalid auth."""
+    config_entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="C.M.I",
+        data=DUMMY_CONFIG_ENTRY,
+    )
+    config_entry.add_to_hass(hass)
+
+    with patch("custom_components.ta_cmi.async_setup_entry", return_value=True), patch(
+        "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
+        side_effect=InvalidCredentialsError("Invalid API key"),
+    ):
+        result = await hass.config_entries.options.async_init(config_entry.entry_id)
+
+        await hass.config_entries.async_setup(config_entry.entry_id)
+        await hass.async_block_till_done()
+
+        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["step_id"] == "init"
+
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            user_input=DUMMY_ENTRY_CHANGE_IP,
+        )
+
+        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["step_id"] == "init"
+        assert result["errors"] == {"base": "invalid_auth"}
+        assert dict(config_entry.options) == {}
+
+@pytest.mark.asyncio
+async def test_options_flow_ip_change_connection_error(hass: HomeAssistant) -> None:
+    """Test config flow options with ip change and connection error."""
+    config_entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="C.M.I",
+        data=DUMMY_CONFIG_ENTRY,
+    )
+    config_entry.add_to_hass(hass)
+
+    with patch("custom_components.ta_cmi.async_setup_entry", return_value=True), patch(
+        "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
+        side_effect=ApiError("Could not connect to C.M.I."),
+    ):
+        result = await hass.config_entries.options.async_init(config_entry.entry_id)
+
+        await hass.config_entries.async_setup(config_entry.entry_id)
+        await hass.async_block_till_done()
+
+        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["step_id"] == "init"
+
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            user_input=DUMMY_ENTRY_CHANGE_IP,
+        )
+
+        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["step_id"] == "init"
+        assert result["errors"] == {"base": "cannot_connect"}
+        assert dict(config_entry.options) == {}
+
+@pytest.mark.asyncio
+async def test_options_flow_ip_change_unexpected_error(hass: HomeAssistant) -> None:
+    """Test config flow options with ip change and unexpected error."""
+    config_entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="C.M.I",
+        data=DUMMY_CONFIG_ENTRY,
+    )
+    config_entry.add_to_hass(hass)
+
+    with patch("custom_components.ta_cmi.async_setup_entry", return_value=True), patch(
+        "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
+        side_effect=Exception("DUMMY"),
+    ):
+        result = await hass.config_entries.options.async_init(config_entry.entry_id)
+
+        await hass.config_entries.async_setup(config_entry.entry_id)
+        await hass.async_block_till_done()
+
+        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["step_id"] == "init"
+
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            user_input=DUMMY_ENTRY_CHANGE_IP,
+        )
+
+        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["step_id"] == "init"
+        assert result["errors"] == {"base": "unknown"}
+        assert dict(config_entry.options) == {}
