@@ -5,6 +5,7 @@ import asyncio
 from datetime import timedelta
 import time
 from typing import Any
+from copy import deepcopy
 
 from aiohttp import ClientSession
 from homeassistant import config_entries
@@ -102,7 +103,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.start_time: float = ConfigFlow.init_start_time
 
     async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
+            self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step."""
         errors: dict[str, Any] = {}
@@ -144,7 +145,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_devices(
-        self, user_input: dict[str, Any] | None = None
+            self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Step for setup devices."""
         errors: dict[str, Any] = {}
@@ -231,7 +232,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return [x.title() for x in DEVICE_TYPE_STRING_MAP.values()]
 
     async def async_step_channel(
-        self, user_input: dict[str, Any] | None = None
+            self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Step for setup channels."""
 
@@ -293,7 +294,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
+            config_entry: config_entries.ConfigEntry,
     ) -> OptionsFlowHandler:
         """Get the options flow for this handler."""
         return OptionsFlowHandler(config_entry)
@@ -309,6 +310,7 @@ def get_schema(config: dict[str, Any], device_count: int) -> vol.Schema:
 
     return vol.Schema(
         {
+            vol.Required(CONF_HOST, default=config[CONF_HOST]): cv.string,
             vol.Required(
                 CONF_SCAN_INTERVAL, default=default_interval.seconds / 60
             ): vol.All(int, vol.Range(min=device_count + 1, max=60)),
@@ -325,7 +327,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.data = dict(self.config_entry.data)
 
     async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
+            self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle options flow."""
 
@@ -334,7 +336,28 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None and not errors:
             self.data[CONF_SCAN_INTERVAL] = user_input[CONF_SCAN_INTERVAL]
 
-            return self.async_create_entry(title="", data=self.data)
+            if user_input[CONF_HOST] != self.data[CONF_HOST]:
+                if not user_input[CONF_HOST].startswith("http://"):
+                    user_input[CONF_HOST] = "http://" + user_input[CONF_HOST]
+
+                try:
+                    tmp = deepcopy(self.data)
+                    tmp[CONF_HOST] = user_input[CONF_HOST]
+                    await validate_login(
+                        tmp, async_get_clientsession(self.hass)
+                    )
+                except CannotConnect:
+                    errors["base"] = "cannot_connect"
+                except InvalidAuth:
+                    errors["base"] = "invalid_auth"
+                except Exception as err:  # pylint: disable=broad-except
+                    _LOGGER.exception("Unexpected exception: %s", err)
+                    errors["base"] = "unknown"
+                else:
+                    self.data[CONF_HOST] = user_input[CONF_HOST]
+                    return self.async_create_entry(title="", data=self.data)
+            else:
+                return self.async_create_entry(title="", data=self.data)
 
         return self.async_show_form(
             step_id="init",

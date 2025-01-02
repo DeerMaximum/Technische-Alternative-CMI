@@ -46,7 +46,8 @@
       "init": {
         "title": "Options",
         "data": {
-          "scan_interval": "Update interval (minutes)"
+          "scan_interval": "Update interval (minutes)",
+          "host": "Base url of the C.M.I (http://IP)"
         }
       }
     },
