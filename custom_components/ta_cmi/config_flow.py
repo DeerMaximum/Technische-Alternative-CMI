@@ -2,10 +2,10 @@
 from __future__ import annotations
 
 import asyncio
+from copy import deepcopy
 from datetime import timedelta
 import time
 from typing import Any
-from copy import deepcopy
 
 from aiohttp import ClientSession
 from homeassistant import config_entries
@@ -103,7 +103,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.start_time: float = ConfigFlow.init_start_time
 
     async def async_step_user(
-            self, user_input: dict[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step."""
         errors: dict[str, Any] = {}
@@ -145,7 +145,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_devices(
-            self, user_input: dict[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Step for setup devices."""
         errors: dict[str, Any] = {}
@@ -203,14 +203,17 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 else:
                     errors["base"] = "unknown"
                     _LOGGER.exception("Unexpected exception: %s", err)
+                    break
             except RateLimitError:
                 errors["base"] = "rate_limit"
+                break
             except InvalidDeviceError:
                 errors["base"] = "invalid_device"
                 _LOGGER.warning("Invalid device: %s", dev.id)
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected exception: %s", err)
                 errors["base"] = "unknown"
+                break
             else:
                 devices_list[dev.id] = str(dev)
 
@@ -232,7 +235,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return [x.title() for x in DEVICE_TYPE_STRING_MAP.values()]
 
     async def async_step_channel(
-            self, user_input: dict[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Step for setup channels."""
 
@@ -294,7 +297,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(
-            config_entry: config_entries.ConfigEntry,
+        config_entry: config_entries.ConfigEntry,
     ) -> OptionsFlowHandler:
         """Get the options flow for this handler."""
         return OptionsFlowHandler(config_entry)
@@ -327,7 +330,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.data = dict(self.config_entry.data)
 
     async def async_step_init(
-            self, user_input: dict[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle options flow."""
 
@@ -343,9 +346,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 try:
                     tmp = deepcopy(self.data)
                     tmp[CONF_HOST] = user_input[CONF_HOST]
-                    await validate_login(
-                        tmp, async_get_clientsession(self.hass)
-                    )
+                    await validate_login(tmp, async_get_clientsession(self.hass))
                 except CannotConnect:
                     errors["base"] = "cannot_connect"
                 except InvalidAuth:
