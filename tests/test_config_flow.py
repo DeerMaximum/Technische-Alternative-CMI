@@ -135,7 +135,7 @@ DUMMY_ENTRY_CHANGE: dict[str, Any] = {
 
 DUMMY_ENTRY_CHANGE_IP: dict[str, Any] = {
     CONF_SCAN_INTERVAL: 15,
-    CONF_HOST: "http://localhost2"
+    CONF_HOST: "http://localhost2",
 }
 
 DUMMY_CONFIG_ENTRY_UPDATED: dict[str, Any] = {
@@ -295,7 +295,7 @@ async def test_step_user_unkown_device(hass: HomeAssistant) -> None:
 
         assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
         assert result["step_id"] == "devices"
-        assert result["errors"] == {"base": "invalid_device"}
+        assert result["errors"] == {"base": "unknown"}
 
 
 @pytest.mark.asyncio
@@ -402,7 +402,7 @@ async def test_step_devices_with_multiple_devices(hass: HomeAssistant) -> None:
 
         assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
         assert result["step_id"] == "devices"
-        assert result["errors"] == {"base": "invalid_device"}
+        assert result["errors"] == {"base": "unknown"}
 
 
 @pytest.mark.asyncio
@@ -574,6 +574,7 @@ async def test_options_flow_init_no_ip(hass: HomeAssistant) -> None:
         assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
         assert dict(config_entry.options) == DUMMY_CONFIG_ENTRY_UPDATED
 
+
 @pytest.mark.asyncio
 async def test_options_flow_init(hass: HomeAssistant) -> None:
     """Test config flow options with ip change."""
@@ -585,8 +586,8 @@ async def test_options_flow_init(hass: HomeAssistant) -> None:
     config_entry.add_to_hass(hass)
 
     with patch("custom_components.ta_cmi.async_setup_entry", return_value=True), patch(
-            "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
-            return_value="2;",
+        "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
+        return_value="2;",
     ), patch(
         "ta_cmi.cmi_api.CMIAPI._make_request_get", return_value=DUMMY_DEVICE_API_DATA
     ), patch(
@@ -607,6 +608,7 @@ async def test_options_flow_init(hass: HomeAssistant) -> None:
 
         assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
         assert dict(config_entry.options) == DUMMY_CONFIG_ENTRY_UPDATED_IP
+
 
 @pytest.mark.asyncio
 async def test_options_flow_ip_change_invalid_auth(hass: HomeAssistant) -> None:
@@ -640,6 +642,7 @@ async def test_options_flow_ip_change_invalid_auth(hass: HomeAssistant) -> None:
         assert result["errors"] == {"base": "invalid_auth"}
         assert dict(config_entry.options) == {}
 
+
 @pytest.mark.asyncio
 async def test_options_flow_ip_change_connection_error(hass: HomeAssistant) -> None:
     """Test config flow options with ip change and connection error."""
@@ -671,6 +674,7 @@ async def test_options_flow_ip_change_connection_error(hass: HomeAssistant) -> N
         assert result["step_id"] == "init"
         assert result["errors"] == {"base": "cannot_connect"}
         assert dict(config_entry.options) == {}
+
 
 @pytest.mark.asyncio
 async def test_options_flow_ip_change_unexpected_error(hass: HomeAssistant) -> None:
