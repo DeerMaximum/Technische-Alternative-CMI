@@ -12,9 +12,8 @@
         },
         "devices": {
           "title": "Knoten einrichten",
-          "description": "Geräte zum Abfragen aus der Liste auswählen",
           "data": {
-            "devices": "Verbundene Geräte",
+            "devices": "Geräte zum Abfragen aus der Liste auswählen",
             "edit_channels": "Kanäle bearbeiten?",
             "fetchmode": "Alle Kanäle abrufen. (Sonst nur konfigurierte Kanäle)"
           }
@@ -36,7 +35,7 @@
         "rate_limit": "Maximalanzahl an Abfragen pro Minute erreicht. Probiere es in einer Minute erneut.",
         "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
         "device_error": "Fehler bei der Kommunikation mit einem Gerät. Details siehe Logs.",
-        "invalid_device" : "Ungültiges Gerät mit der C.M.I. verbunden. Details siehe Logs.",
+        "invalid_device" : "Ungültiges Gerät mit der C.M.I. verbunden. Es wurde ignoriert. Details siehe Logs.",
         "unknown": "[%key:common::config_flow::error::unknown%]",
         "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]"
       }
@@ -55,7 +54,7 @@
         "rate_limit": "Maximalanzahl an Abfragen pro Minute erreicht. Probiere es in einer Minute erneut.",
         "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
         "device_error": "Fehler bei der Kommunikation mit einem Gerät. Details siehe Logs.",
-        "invalid_device" : "Ungültiges Gerät mit der C.M.I. verbunden. Details siehe Logs.",
+        "invalid_device" : "Ungültiges Gerät mit der C.M.I. verbunden. Es wurde ignoriert. Details siehe Logs.",
         "unknown": "[%key:common::config_flow::error::unknown%]",
         "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]"
       }

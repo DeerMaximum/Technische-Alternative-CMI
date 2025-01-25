@@ -195,7 +195,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await fetch_device(dev)
 
             except ApiError as err:
-                if "Unknown" not in str(err):
+                if "Device not supported" in str(err):
+                    errors["base"] = "invalid_device"
+                    _LOGGER.warning("Invalid device: %s", dev.id)
+                elif "Unknown" not in str(err):
                     errors["base"] = "device_error"
                     _LOGGER.warning(
                         "Error while communicating with a device (%s): %s", dev.id, err
@@ -207,9 +210,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             except RateLimitError:
                 errors["base"] = "rate_limit"
                 break
-            except InvalidDeviceError:
-                errors["base"] = "invalid_device"
-                _LOGGER.warning("Invalid device: %s", dev.id)
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected exception: %s", err)
                 errors["base"] = "unknown"
