@@ -114,6 +114,11 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
             await asyncio.sleep(delay)
         except asyncio.CancelledError:
             elapsed = time.time() - start
+            _LOGGER.debug(
+                "Sleep cancelled after %s. Sleep remaining time: %s",
+                elapsed,
+                delay - elapsed,
+            )
             await asyncio.sleep(delay - elapsed)
 
     async def _async_update_data(self) -> dict[str, Any]:
