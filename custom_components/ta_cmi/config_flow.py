@@ -1,7 +1,6 @@
 """Config flow for Technische Alternative C.M.I. integration."""
 from __future__ import annotations
 
-import asyncio
 from copy import deepcopy
 from datetime import timedelta
 import time
@@ -15,16 +14,10 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
-from ta_cmi import (
-    CMI,
-    ApiError,
-    Device,
-    InvalidCredentialsError,
-    InvalidDeviceError,
-    RateLimitError,
-)
+from ta_cmi import CMI, ApiError, Device, InvalidCredentialsError, RateLimitError
 import voluptuous as vol
 
+from . import custom_sleep
 from .const import (
     _LOGGER,
     CONF_CHANNELS,
@@ -69,13 +62,13 @@ async def fetch_device(device: Device, retry=False) -> None:
             _LOGGER.debug(
                 f"Sleep mode for {DEVICE_DELAY} seconds to prevent rate limiting"
             )
-            await asyncio.sleep(DEVICE_DELAY)
+            await custom_sleep(DEVICE_DELAY)
             device.set_device_type("DUMMY-NO-IO")
 
         _LOGGER.debug("Try to fetch device type: %s", device.id)
         await device.fetch_type()
         _LOGGER.debug(f"Sleep mode for {DEVICE_DELAY} seconds to prevent rate limiting")
-        await asyncio.sleep(DEVICE_DELAY)
+        await custom_sleep(DEVICE_DELAY)
 
         _LOGGER.debug("Try to fetch available device channels: %s", device.id)
         await device.update()
@@ -189,7 +182,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.debug(
                     f"Sleep mode for {DEVICE_DELAY} seconds to prevent rate limiting"
                 )
-                await asyncio.sleep(DEVICE_DELAY)
+                await custom_sleep(DEVICE_DELAY)
 
             try:
                 await fetch_device(dev)
@@ -291,7 +284,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         end_time = time.time()
         time_lapsed = end_time - self.start_time
         if time_lapsed <= DEVICE_DELAY:
-            await asyncio.sleep(DEVICE_DELAY - time_lapsed)
+            await custom_sleep(int(DEVICE_DELAY - time_lapsed))
         return self.async_create_entry(title="C.M.I", data=self.config)
 
     @staticmethod
