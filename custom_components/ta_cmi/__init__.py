@@ -29,6 +29,21 @@ from .device_parser import DeviceParser
 PLATFORMS: list[str] = [Platform.SENSOR, Platform.BINARY_SENSOR]
 
 
+async def custom_sleep(delay: int) -> None:
+    """Custom sleep function to prevent Home Assistant from canceling."""
+    start = time.time()
+    try:
+        await asyncio.sleep(delay)
+    except asyncio.CancelledError:
+        elapsed = time.time() - start
+        _LOGGER.debug(
+            "Sleep cancelled after %s. Sleep remaining time: %s",
+            elapsed,
+            delay - elapsed,
+        )
+        await asyncio.sleep(delay - elapsed)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up platform from a ConfigEntry."""
     host: str = entry.data[CONF_HOST]
@@ -106,21 +121,6 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
 
-    @staticmethod
-    async def custom_sleep(delay: int) -> None:
-        """Custom sleep function to prevent Home Assistant from canceling."""
-        start = time.time()
-        try:
-            await asyncio.sleep(delay)
-        except asyncio.CancelledError:
-            elapsed = time.time() - start
-            _LOGGER.debug(
-                "Sleep cancelled after %s. Sleep remaining time: %s",
-                elapsed,
-                delay - elapsed,
-            )
-            await asyncio.sleep(delay - elapsed)
-
     async def _async_update_data(self) -> dict[str, Any]:
         """Update data."""
         try:
@@ -141,7 +141,7 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
                     _LOGGER.debug(
                         f"Sleep mode for {DEVICE_DELAY} seconds to prevent rate limiting"
                     )
-                    await self.custom_sleep(DEVICE_DELAY)
+                    await custom_sleep(DEVICE_DELAY)
 
             return return_data
         except (InvalidCredentialsError, RateLimitError, ApiError) as err:
