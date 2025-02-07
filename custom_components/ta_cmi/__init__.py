@@ -145,4 +145,10 @@ class CMIDataUpdateCoordinator(DataUpdateCoordinator):
 
             return return_data
         except (InvalidCredentialsError, RateLimitError, ApiError) as err:
+            _LOGGER.warning("Update failed with error: %s", str(err))
+            _LOGGER.debug(
+                "Waiting %s seconds to prevent retrying with an rate limit error",
+                DEVICE_DELAY,
+            )
+            await custom_sleep(DEVICE_DELAY)
             raise UpdateFailed(err) from err
