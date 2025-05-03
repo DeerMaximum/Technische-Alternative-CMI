@@ -25,7 +25,16 @@ A clear and concise description of what the bug is.
 
 ## Debug log
 
-<!-- To enable debug logs check this https://www.home-assistant.io/components/logger/ -->
+<!-- To enable debug logs please add the code snipped below to your Home Assistant configuration.
+
+```yaml
+logger:
+  default: info
+  logs:
+    custom_components.ta_cmi: debug
+    ta_cmi: debug
+```
+-->
 
 ```text
 
