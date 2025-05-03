@@ -24,6 +24,10 @@ Currently supported devices:
 > The loading time of the integration is extended by one minute per configured node on the C.M.I. to avoid triggering the rate limit.
 > The same applies to the setup process
 
+## Requirements
+
+* Credentials for an expert user on the C.M.I.
+
 {% if not installed %}
 ## Installation
 
@@ -68,6 +72,13 @@ In this step, individual channels can be customized, including the following pro
 
 To customize a channel, select the device,
 on which the channel is located, enter the channel number and finally select the channel type.
+
+## Common errors
+
+### "Unknown error occurred" on setup after ~60s
+
+This error occurs if the setup is done on a Home Assistant instance that is accessed through a reverse proxy or the Home Assistant Cloud. 
+In this case please connect **directly** to your instance and set up the integration.
 
 ## Supported data types
 
