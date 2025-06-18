@@ -1,0 +1,50 @@
+[project]
+name = "tacmi"
+version = "1.9.12"
+description = "This integration monitors the inputs and outputs of the devices connected to a C.M.I."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "DeerMaximum", email = "git983456@parabelmail.de" },
+]
+maintainers = [
+    { name = "DeerMaximum", email = "git983456@parabelmail.de" },
+]
+requires-python = ">=3.13.2"
+keywords = [
+    "homeassistant",
+    "c.m.i.",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "ta-cmi==3.3.1",
+]
+
+[project.urls]
+homepage = "https://github.com/DeerMaximum/Technische-Alternative-CMI"
+repository = "https://github.com/DeerMaximum/Technische-Alternative-CMI"
+
+[dependency-groups]
+dev = [
+    "aiohttp_cors",
+    "pytest-homeassistant-custom-component==0.13.232",
+    "josepy<2.0.0"
+]
+lint = [
+    "ruff>=0.12.0"
+]
+
+[tool.ruff]
+preview = true
+
+[tool.ruff.lint.isort]
+case-sensitive = true
+
+[tool.uv]
+default-groups = "all"
