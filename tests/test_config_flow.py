@@ -6,11 +6,11 @@ import time
 from typing import Any
 from unittest.mock import patch
 
-from homeassistant import data_entry_flow
+import pytest
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
-import pytest
+from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from ta_cmi import CMIAPI, ApiError, Device, InvalidCredentialsError, RateLimitError
 
@@ -180,7 +180,7 @@ async def test_show_set_form(hass: HomeAssistant) -> None:
         DOMAIN, context={"source": SOURCE_USER}
     )
 
-    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+    assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "user"
 
 
@@ -195,7 +195,7 @@ async def test_step_user_connection_error(hass: HomeAssistant) -> None:
             DOMAIN, context={"source": SOURCE_USER}, data=DUMMY_CONNECTION_DATA
         )
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "user"
         assert result["errors"] == {"base": "cannot_connect"}
 
@@ -211,7 +211,7 @@ async def test_step_user_invalid_auth(hass: HomeAssistant) -> None:
             DOMAIN, context={"source": SOURCE_USER}, data=DUMMY_CONNECTION_DATA
         )
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "user"
         assert result["errors"] == {"base": "invalid_auth"}
 
@@ -227,7 +227,7 @@ async def test_step_user_unexpected_exception(hass: HomeAssistant) -> None:
             DOMAIN, context={"source": SOURCE_USER}, data=DUMMY_CONNECTION_DATA
         )
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "user"
         assert result["errors"] == {"base": "unknown"}
 
@@ -249,7 +249,7 @@ async def test_step_user(hass: HomeAssistant) -> None:
 
         sleep_m.assert_called_once()
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "devices"
         assert result["errors"] == {}
 
@@ -271,7 +271,7 @@ async def test_step_user_only_ip(hass: HomeAssistant) -> None:
 
         sleep_m.assert_called_once()
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "devices"
         assert result["errors"] == {}
 
@@ -293,7 +293,7 @@ async def test_step_user_unkown_device(hass: HomeAssistant) -> None:
             DOMAIN, context={"source": SOURCE_USER}, data=DUMMY_CONNECTION_DATA
         )
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "devices"
         assert result["errors"] == {"base": "unknown"}
 
@@ -308,7 +308,7 @@ async def test_new_uid_flag_set(hass: HomeAssistant) -> None:
             data=DUMMY_DEVICE_DATA_NO_CHANNEL_FETCH_ALL,
         )
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+        assert result["type"] == FlowResultType.CREATE_ENTRY
         assert result["title"] == "C.M.I"
         assert result["data"][NEW_UID] == True
 
@@ -324,7 +324,7 @@ async def test_step_devices_without_edit_fetch_all(hass: HomeAssistant) -> None:
             data=DUMMY_DEVICE_DATA_NO_CHANNEL_FETCH_ALL,
         )
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+        assert result["type"] == FlowResultType.CREATE_ENTRY
         assert result["title"] == "C.M.I"
 
 
@@ -344,7 +344,7 @@ async def test_step_devices_without_edit_fetch_defined(hass: HomeAssistant) -> N
             data=DUMMY_DEVICE_DATA_NO_CHANNEL_FETCH_DEFINED,
         )
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+        assert result["type"] == FlowResultType.CREATE_ENTRY
         assert result["title"] == "C.M.I"
 
 
@@ -378,7 +378,7 @@ async def test_step_device_with_device_without_io_support(hass: HomeAssistant) -
         assert sleep_m.call_count == 2
         assert request_m.call_count == 3
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "devices"
         assert result["errors"] == {}
 
@@ -400,7 +400,7 @@ async def test_step_devices_with_multiple_devices(hass: HomeAssistant) -> None:
             DOMAIN, context={"source": "devices"}
         )
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "devices"
         assert result["errors"] == {"base": "unknown"}
 
@@ -415,7 +415,7 @@ async def test_step_devices_with_edit(hass: HomeAssistant) -> None:
         data=DUMMY_DEVICE_DATA_EDIT_CHANNEL,
     )
 
-    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+    assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "channel"
     assert result["errors"] == {}
 
@@ -433,7 +433,7 @@ async def test_step_finish_dynamic_wait(hass: HomeAssistant) -> None:
             data=DUMMY_DEVICE_DATA_NO_CHANNEL_FETCH_DEFINED,
         )
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+        assert result["type"] == FlowResultType.CREATE_ENTRY
         assert result["title"] == "C.M.I"
 
         mock.assert_called_once()
@@ -452,7 +452,7 @@ async def test_step_device_communication_error(hass: HomeAssistant) -> None:
             context={"source": "devices"},
         )
 
-    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+    assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "devices"
     assert result["errors"] == {"base": "device_error"}
 
@@ -470,7 +470,7 @@ async def test_step_device_unkown_error(hass: HomeAssistant) -> None:
             context={"source": "devices"},
         )
 
-    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+    assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "devices"
     assert result["errors"] == {"base": "unknown"}
 
@@ -488,7 +488,7 @@ async def test_step_device_rate_limit_error(hass: HomeAssistant) -> None:
             context={"source": "devices"},
         )
 
-    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+    assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "devices"
     assert result["errors"] == {"base": "rate_limit"}
 
@@ -516,7 +516,7 @@ async def test_step_channels_edit_only_one(hass: HomeAssistant) -> None:
             data=DUMMY_CHANNEL_DATA_NO_OTHER_EDIT,
         )
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+        assert result["type"] == FlowResultType.CREATE_ENTRY
         assert result["title"] == "C.M.I"
 
 
@@ -541,7 +541,7 @@ async def test_step_channels_edit_more(hass: HomeAssistant) -> None:
             DOMAIN, context={"source": "channel"}, data=DUMMY_CHANNEL_DATA_OTHER_EDIT
         )
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "channel"
         assert result["errors"] == {}
 
@@ -563,7 +563,7 @@ async def test_options_flow_init_no_ip(hass: HomeAssistant) -> None:
         await hass.config_entries.async_setup(config_entry.entry_id)
         await hass.async_block_till_done()
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "init"
 
         result = await hass.config_entries.options.async_configure(
@@ -571,7 +571,7 @@ async def test_options_flow_init_no_ip(hass: HomeAssistant) -> None:
             user_input=DUMMY_ENTRY_CHANGE,
         )
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+        assert result["type"] == FlowResultType.CREATE_ENTRY
         assert dict(config_entry.options) == DUMMY_CONFIG_ENTRY_UPDATED
 
 
@@ -598,7 +598,7 @@ async def test_options_flow_init(hass: HomeAssistant) -> None:
         await hass.config_entries.async_setup(config_entry.entry_id)
         await hass.async_block_till_done()
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "init"
 
         result = await hass.config_entries.options.async_configure(
@@ -606,7 +606,7 @@ async def test_options_flow_init(hass: HomeAssistant) -> None:
             user_input=DUMMY_ENTRY_CHANGE_IP,
         )
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+        assert result["type"] == FlowResultType.CREATE_ENTRY
         assert dict(config_entry.options) == DUMMY_CONFIG_ENTRY_UPDATED_IP
 
 
@@ -629,7 +629,7 @@ async def test_options_flow_ip_change_invalid_auth(hass: HomeAssistant) -> None:
         await hass.config_entries.async_setup(config_entry.entry_id)
         await hass.async_block_till_done()
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "init"
 
         result = await hass.config_entries.options.async_configure(
@@ -637,7 +637,7 @@ async def test_options_flow_ip_change_invalid_auth(hass: HomeAssistant) -> None:
             user_input=DUMMY_ENTRY_CHANGE_IP,
         )
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "init"
         assert result["errors"] == {"base": "invalid_auth"}
         assert dict(config_entry.options) == {}
@@ -662,7 +662,7 @@ async def test_options_flow_ip_change_connection_error(hass: HomeAssistant) -> N
         await hass.config_entries.async_setup(config_entry.entry_id)
         await hass.async_block_till_done()
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "init"
 
         result = await hass.config_entries.options.async_configure(
@@ -670,7 +670,7 @@ async def test_options_flow_ip_change_connection_error(hass: HomeAssistant) -> N
             user_input=DUMMY_ENTRY_CHANGE_IP,
         )
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "init"
         assert result["errors"] == {"base": "cannot_connect"}
         assert dict(config_entry.options) == {}
@@ -695,7 +695,7 @@ async def test_options_flow_ip_change_unexpected_error(hass: HomeAssistant) -> N
         await hass.config_entries.async_setup(config_entry.entry_id)
         await hass.async_block_till_done()
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "init"
 
         result = await hass.config_entries.options.async_configure(
@@ -703,7 +703,7 @@ async def test_options_flow_ip_change_unexpected_error(hass: HomeAssistant) -> N
             user_input=DUMMY_ENTRY_CHANGE_IP,
         )
 
-        assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "init"
         assert result["errors"] == {"base": "unknown"}
         assert dict(config_entry.options) == {}
