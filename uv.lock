@@ -1988,7 +1988,7 @@ wheels = [
 
 [[package]]
 name = "tacmi"
-version = "2.1.16"
+version = "1.9.12"
 source = { virtual = "." }
 dependencies = [
     { name = "ta-cmi" },
