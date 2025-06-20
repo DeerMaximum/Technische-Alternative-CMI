@@ -1,11 +1,13 @@
 """Config flow for Technische Alternative C.M.I. integration."""
 from __future__ import annotations
 
+import time
 from copy import deepcopy
 from datetime import timedelta
-import time
 from typing import Any
 
+import homeassistant.helpers.config_validation as cv
+import voluptuous as vol
 from aiohttp import ClientSession
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
@@ -13,9 +15,7 @@ from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-import homeassistant.helpers.config_validation as cv
 from ta_cmi import CMI, ApiError, Device, InvalidCredentialsError, RateLimitError
-import voluptuous as vol
 
 from . import custom_sleep
 from .const import (
@@ -349,9 +349,15 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     errors["base"] = "unknown"
                 else:
                     self.data[CONF_HOST] = user_input[CONF_HOST]
-                    return self.async_create_entry(title="", data=self.data)
+                    self.hass.config_entries.async_update_entry(
+                        self.config_entry, data=self.data
+                    )
+                    return self.async_create_entry(title="", data={})
             else:
-                return self.async_create_entry(title="", data=self.data)
+                self.hass.config_entries.async_update_entry(
+                    self.config_entry, data=self.data
+                )
+                return self.async_create_entry(title="", data={})
 
         return self.async_show_form(
             step_id="init",
