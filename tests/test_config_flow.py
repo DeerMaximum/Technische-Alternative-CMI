@@ -572,7 +572,7 @@ async def test_options_flow_init_no_ip(hass: HomeAssistant) -> None:
         )
 
         assert result["type"] == FlowResultType.CREATE_ENTRY
-        assert dict(config_entry.options) == DUMMY_CONFIG_ENTRY_UPDATED
+        assert dict(config_entry.data) == DUMMY_CONFIG_ENTRY_UPDATED
 
 
 @pytest.mark.asyncio
@@ -607,7 +607,7 @@ async def test_options_flow_init(hass: HomeAssistant) -> None:
         )
 
         assert result["type"] == FlowResultType.CREATE_ENTRY
-        assert dict(config_entry.options) == DUMMY_CONFIG_ENTRY_UPDATED_IP
+        assert dict(config_entry.data) == DUMMY_CONFIG_ENTRY_UPDATED_IP
 
 
 @pytest.mark.asyncio
@@ -640,7 +640,7 @@ async def test_options_flow_ip_change_invalid_auth(hass: HomeAssistant) -> None:
         assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "init"
         assert result["errors"] == {"base": "invalid_auth"}
-        assert dict(config_entry.options) == {}
+        assert dict(config_entry.data) == DUMMY_CONFIG_ENTRY
 
 
 @pytest.mark.asyncio
