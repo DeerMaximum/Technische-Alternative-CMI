@@ -9,10 +9,14 @@ from typing import Any
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from aiohttp import ClientSession
-from homeassistant import config_entries
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import callback
-from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from ta_cmi import CMI, ApiError, Device, InvalidCredentialsError, RateLimitError
@@ -79,7 +83,7 @@ async def fetch_device(device: Device, retry=False) -> None:
         raise
 
 
-class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class ConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Technische Alternative C.M.I.."""
 
     VERSION = 1
@@ -97,7 +101,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle the initial step."""
         errors: dict[str, Any] = {}
 
@@ -139,7 +143,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_devices(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Step for setup devices."""
         errors: dict[str, Any] = {}
 
@@ -229,7 +233,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_channel(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Step for setup channels."""
 
         errors: dict[str, Any] = {}
@@ -278,7 +282,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def async_step_finish(self) -> FlowResult:
+    async def async_step_finish(self) -> ConfigFlowResult:
         """Step for save the config."""
         # Wait to prevent rate limiting from being triggered.
         end_time = time.time()
@@ -290,7 +294,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
+        config_entry: ConfigEntry,
     ) -> OptionsFlowHandler:
         """Get the options flow for this handler."""
         return OptionsFlowHandler(config_entry)
@@ -314,17 +318,16 @@ def get_schema(config: dict[str, Any], device_count: int) -> vol.Schema:
     )
 
 
-class OptionsFlowHandler(config_entries.OptionsFlow):
+class OptionsFlowHandler(OptionsFlow):
     """Handle a option flow for Technische Alternative C.M.I.."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+    def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize options flow."""
-        self.config_entry = config_entry
-        self.data = dict(self.config_entry.data)
+        self.data = dict(config_entry.data)
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle options flow."""
 
         errors: dict[str, Any] = {}
