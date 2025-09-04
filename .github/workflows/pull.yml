@@ -30,7 +30,7 @@ jobs:
             version: "0.7"
             enable-cache: true
         - name: "Set up Python"
-          uses: actions/setup-python@v5
+          uses: actions/setup-python@v6
           with:
             python-version-file: ".python-version"
         - name: Install the project
@@ -51,7 +51,7 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
       - name: "Set up Python"
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version-file: ".python-version"
       - name: Install the project
