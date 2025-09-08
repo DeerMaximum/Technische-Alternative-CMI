@@ -310,7 +310,7 @@ def get_schema(config: dict[str, Any], device_count: int) -> vol.Schema:
 
     return vol.Schema(
         {
-            vol.Required(CONF_HOST, default=config[CONF_HOST]): cv.string,
+            vol.Required(CONF_HOST, default=config.get(CONF_HOST,"")): cv.string,
             vol.Required(
                 CONF_SCAN_INTERVAL, default=default_interval.seconds / 60
             ): vol.All(int, vol.Range(min=device_count + 1, max=60)),

@@ -46,11 +46,11 @@ async def custom_sleep(delay: int) -> None:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up platform from a ConfigEntry."""
-    host: str = entry.data[CONF_HOST]
-    username: str = entry.data[CONF_USERNAME]
-    password: str = entry.data[CONF_PASSWORD]
+    host: str = entry.data.get(CONF_HOST, "")
+    username: str = entry.data.get(CONF_USERNAME, "")
+    password: str = entry.data.get(CONF_PASSWORD, "")
 
-    devices: dict[str, Any] = entry.data[CONF_DEVICES]
+    devices: dict[str, Any] = entry.data.get(CONF_DEVICES, [])
 
     update_interval: timedelta = SCAN_INTERVAL
 
@@ -79,7 +79,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle options update."""
-    hass.config_entries.async_update_entry(entry, data=entry.options)
     await hass.config_entries.async_reload(entry.entry_id)
 
 
