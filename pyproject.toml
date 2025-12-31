@@ -23,7 +23,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-    "ta-cmi==3.3.1",
+    "ta-cmi==3.4.0",
 ]
 
 [project.urls]
@@ -32,12 +32,11 @@ repository = "https://github.com/DeerMaximum/Technische-Alternative-CMI"
 
 [dependency-groups]
 dev = [
-    "aiohttp_cors",
-    "pytest-homeassistant-custom-component==0.13.252",
-    "josepy<2.0.0"
+    "aiohttp_cors~=0.8.1",
+    "pytest-homeassistant-custom-component==0.13.301"
 ]
 lint = [
-    "ruff>=0.12.0"
+    "ruff>=0.14.10"
 ]
 
 [tool.ruff]
