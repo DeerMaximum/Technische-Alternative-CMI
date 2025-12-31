@@ -1,6 +1,6 @@
 [project]
 name = "tacmi"
-version = "1.9.14"
+version = "1.10.0"
 description = "This integration monitors the inputs and outputs of the devices connected to a C.M.I."
 readme = "README.md"
 license = "MIT"
