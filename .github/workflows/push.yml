@@ -6,6 +6,9 @@ on:
       - master
       - dev
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     runs-on: "ubuntu-latest"
