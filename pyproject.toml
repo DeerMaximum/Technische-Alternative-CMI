@@ -33,7 +33,8 @@ repository = "https://github.com/DeerMaximum/Technische-Alternative-CMI"
 [dependency-groups]
 dev = [
     "aiohttp_cors~=0.8.1",
-    "pytest-homeassistant-custom-component==0.13.301"
+    "homeassistant==2026.2.0b1",
+    "pytest-homeassistant-custom-component"
 ]
 lint = [
     "ruff>=0.14.10"
