@@ -23,7 +23,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-    "ta-cmi==3.5.0",
+    "ta-cmi==3.6.0",
 ]
 
 [project.urls]
