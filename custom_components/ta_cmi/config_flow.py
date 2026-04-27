@@ -5,6 +5,7 @@ import time
 from copy import deepcopy
 from datetime import timedelta
 from typing import Any
+from urllib.parse import urlparse
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
@@ -19,8 +20,8 @@ from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from ta_cmi import CMI, ApiError, Device, InvalidCredentialsError, RateLimitError
 
+from ta_cmi import CMI, ApiError, Device, InvalidCredentialsError, RateLimitError
 from . import custom_sleep
 from .const import (
     _LOGGER,
@@ -83,6 +84,17 @@ async def fetch_device(device: Device, retry=False) -> None:
         raise
 
 
+def extract_hostname(url: str) -> str | None:
+    parsed = urlparse(url)
+    hostname = parsed.hostname
+    port = parsed.port
+
+    if port:
+        return f"{hostname}:{port}"
+    else:
+        return hostname
+
+
 class ConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Technische Alternative C.M.I.."""
 
@@ -100,7 +112,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         self.start_time: float = ConfigFlow.init_start_time
 
     async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
+            self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the initial step."""
         errors: dict[str, Any] = {}
@@ -142,7 +154,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_devices(
-        self, user_input: dict[str, Any] | None = None
+            self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Step for setup devices."""
         errors: dict[str, Any] = {}
@@ -232,7 +244,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         return [x.title() for x in DEVICE_TYPE_STRING_MAP.values()]
 
     async def async_step_channel(
-        self, user_input: dict[str, Any] | None = None
+            self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Step for setup channels."""
 
@@ -289,12 +301,14 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         time_lapsed = end_time - self.start_time
         if time_lapsed <= DEVICE_DELAY:
             await custom_sleep(int(DEVICE_DELAY - time_lapsed))
-        return self.async_create_entry(title="C.M.I", data=self.config)
+
+        hostname = extract_hostname(self.config.get(CONF_HOST, "")) or "C.M.I."
+        return self.async_create_entry(title=hostname, data=self.config)
 
     @staticmethod
     @callback
     def async_get_options_flow(
-        config_entry: ConfigEntry,
+            config_entry: ConfigEntry,
     ) -> OptionsFlowHandler:
         """Get the options flow for this handler."""
         return OptionsFlowHandler(config_entry)
@@ -310,7 +324,7 @@ def get_schema(config: dict[str, Any], device_count: int) -> vol.Schema:
 
     return vol.Schema(
         {
-            vol.Required(CONF_HOST, default=config.get(CONF_HOST,"")): cv.string,
+            vol.Required(CONF_HOST, default=config.get(CONF_HOST, "")): cv.string,
             vol.Required(
                 CONF_SCAN_INTERVAL, default=default_interval.seconds / 60
             ): vol.All(int, vol.Range(min=device_count + 1, max=60)),
@@ -326,7 +340,7 @@ class OptionsFlowHandler(OptionsFlow):
         self.data = dict(config_entry.data)
 
     async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
+            self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle options flow."""
 
