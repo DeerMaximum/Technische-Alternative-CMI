@@ -22,16 +22,16 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from ta_cmi import ChannelType
 
+from ta_cmi import ChannelType
 from . import CMIDataUpdateCoordinator
 from .const import DEVICE_TYPE, DOMAIN, NEW_UID, TYPE_BINARY
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
-    config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+        hass: HomeAssistant,
+        config_entry: ConfigEntry,
+        async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up entries."""
     coordinator: CMIDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
@@ -53,14 +53,15 @@ async def async_setup_entry(
             available_channels = coordinator.data[ent][TYPE_BINARY][channel_type.name]
             for ch_id in available_channels:
                 channel: DeviceChannelBinary = DeviceChannelBinary(
-                    coordinator, ent, ch_id, channel_type.name, entry_id
+                    coordinator, ent, ch_id, channel_type.name, entry_id,
+                    (DOMAIN, coordinator.data[ent][CONF_HOST], ent)
                 )
 
                 entities.append(channel)
 
         device_registry.async_get_or_create(
             config_entry_id=config_entry.entry_id,
-            identifiers={(DOMAIN, ent)},
+            identifiers={(DOMAIN, coordinator.data[ent][CONF_HOST], ent)},
             manufacturer="Technische Alternative",
             name=coordinator.data[ent][DEVICE_TYPE],
             model=coordinator.data[ent][DEVICE_TYPE],
@@ -75,12 +76,13 @@ class DeviceChannelBinary(CoordinatorEntity, BinarySensorEntity):
     """Representation of an C.M.I channel."""
 
     def __init__(
-        self,
-        coordinator: CMIDataUpdateCoordinator,
-        node_id: str,
-        channel_id: str,
-        input_type: ChannelType,
-        entry_id: str | None,
+            self,
+            coordinator: CMIDataUpdateCoordinator,
+            node_id: str,
+            channel_id: str,
+            input_type: ChannelType,
+            entry_id: str | None,
+            device_id: tuple[str, str, str],
     ) -> None:
         """Initialize."""
         super().__init__(coordinator)
@@ -88,6 +90,7 @@ class DeviceChannelBinary(CoordinatorEntity, BinarySensorEntity):
         self._node_id = node_id
         self._input_type = input_type
         self._coordinator = coordinator
+        self._device_id = device_id
 
         channel_raw: dict[str, Any] = self._coordinator.data[self._node_id][
             TYPE_BINARY
@@ -125,7 +128,7 @@ class DeviceChannelBinary(CoordinatorEntity, BinarySensorEntity):
 
         return {
             ATTR_NAME: device_name,
-            ATTR_IDENTIFIERS: {(DOMAIN, self._node_id)},
+            ATTR_IDENTIFIERS: {self._device_id},
             ATTR_MANUFACTURER: "Technische Alternative",
             ATTR_MODEL: device_name,
             ATTR_SW_VERSION: device_api_type,
