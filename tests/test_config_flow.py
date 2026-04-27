@@ -517,7 +517,7 @@ async def test_step_channels_edit_only_one(hass: HomeAssistant) -> None:
         )
 
         assert result["type"] == FlowResultType.CREATE_ENTRY
-        assert result["title"] == "C.M.I"
+        assert result["title"] == "C.M.I."
 
 
 @pytest.mark.asyncio

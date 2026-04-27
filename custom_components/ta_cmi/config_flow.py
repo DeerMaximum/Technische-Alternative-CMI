@@ -84,7 +84,7 @@ async def fetch_device(device: Device, retry=False) -> None:
         raise
 
 
-def extract_hostname(url: str) -> str:
+def extract_hostname(url: str) -> str | None:
     parsed = urlparse(url)
     hostname = parsed.hostname
     port = parsed.port
@@ -301,7 +301,9 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         time_lapsed = end_time - self.start_time
         if time_lapsed <= DEVICE_DELAY:
             await custom_sleep(int(DEVICE_DELAY - time_lapsed))
-        return self.async_create_entry(title=extract_hostname(self.config[CONF_HOST]), data=self.config)
+
+        hostname = extract_hostname(self.config.get(CONF_HOST, "")) or "C.M.I."
+        return self.async_create_entry(title=hostname, data=self.config)
 
     @staticmethod
     @callback
