@@ -309,7 +309,7 @@ async def test_new_uid_flag_set(hass: HomeAssistant) -> None:
         )
 
         assert result["type"] == FlowResultType.CREATE_ENTRY
-        assert result["title"] == "C.M.I"
+        assert result["title"] == "1.2.3.4"
         assert result["data"][NEW_UID]
 
 
@@ -325,7 +325,7 @@ async def test_step_devices_without_edit_fetch_all(hass: HomeAssistant) -> None:
         )
 
         assert result["type"] == FlowResultType.CREATE_ENTRY
-        assert result["title"] == "C.M.I"
+        assert result["title"] == "1.2.3.4"
 
 
 @pytest.mark.asyncio
@@ -345,7 +345,7 @@ async def test_step_devices_without_edit_fetch_defined(hass: HomeAssistant) -> N
         )
 
         assert result["type"] == FlowResultType.CREATE_ENTRY
-        assert result["title"] == "C.M.I"
+        assert result["title"] == "1.2.3.4"
 
 
 @pytest.mark.asyncio
@@ -434,7 +434,7 @@ async def test_step_finish_dynamic_wait(hass: HomeAssistant) -> None:
         )
 
         assert result["type"] == FlowResultType.CREATE_ENTRY
-        assert result["title"] == "C.M.I"
+        assert result["title"] == "1.2.3.4"
 
         mock.assert_called_once()
 
