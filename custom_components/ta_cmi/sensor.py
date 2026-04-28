@@ -26,7 +26,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from ta_cmi import ChannelType
 
 from . import CMIDataUpdateCoordinator
-from .const import DEFAULT_DEVICE_CLASS_MAP, DEVICE_TYPE, DOMAIN, NEW_UID, TYPE_SENSOR
+from .const import DEFAULT_DEVICE_CLASS_MAP, DEVICE_TYPE, DOMAIN, NEW_UID, TYPE_SENSOR, _LOGGER
 
 
 async def async_setup_entry(
@@ -59,6 +59,10 @@ async def async_setup_entry(
                 )
 
                 entities.append(channel)
+
+        if dev := device_registry.async_get_device({(DOMAIN, ent)}):
+            _LOGGER.info("Updating device identifiers.")
+            device_registry.async_update_device(dev.id, new_identifiers={(DOMAIN, coordinator.data[ent][CONF_HOST], ent)})
 
         device_registry.async_get_or_create(
             config_entry_id=config_entry.entry_id,
