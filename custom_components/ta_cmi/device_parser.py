@@ -5,7 +5,7 @@ from typing import Any
 
 from homeassistant.const import CONF_API_VERSION, STATE_OFF, STATE_ON
 
-from ta_cmi import Channel, ChannelType, Device, ChannelMode
+from ta_cmi import Channel, ChannelType, Device
 from .const import (
     CONF_CHANNELS,
     CONF_CHANNELS_DEVICE_CLASS,
