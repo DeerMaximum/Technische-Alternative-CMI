@@ -11,7 +11,7 @@ authors = [
 maintainers = [
     { name = "DeerMaximum", email = "git983456@parabelmail.de" },
 ]
-requires-python = ">=3.13.2"
+requires-python = ">=3.14.2"
 keywords = [
     "homeassistant",
     "c.m.i.",
@@ -33,8 +33,11 @@ repository = "https://github.com/DeerMaximum/Technische-Alternative-CMI"
 [dependency-groups]
 dev = [
     "aiohttp_cors~=0.8.1",
-    "homeassistant==2026.2.0b1",
-    "pytest-homeassistant-custom-component"
+    "async_timeout==5.0.1",
+    "homeassistant==2026.5.1",
+    "pytest-homeassistant-custom-component",
+    #Fix UnserializableField exception
+    "mashumaro>=3.21",
 ]
 lint = [
     "ruff>=0.14.10"
