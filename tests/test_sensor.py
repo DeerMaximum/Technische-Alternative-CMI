@@ -30,7 +30,9 @@ DUMMY_DEVICE_API_DATA: dict[str, Any] = {
             {"Number": 2, "AD": "D", "Value": {"Value": 0, "Unit": "43"}},
             {"Number": 3, "AD": "D", "Value": {"Value": 1, "Unit": "44"}},
             {"Number": 4, "AD": "D", "Value": {"Value": 0, "Unit": "44"}},
-            {"Number": 5, "AD": "D", "Value": {"Value": 0, "Unit": "1"}},
+            {"Number": 5, "AD": "A", "Value": {"Value": 0, "Unit": "1"}},
+            {"Number": 6, "AD": "D", "Value": {"Value": 0, "Unit": "0"}},
+            {"Number": 7, "AD": "A", "Value": {"Value": 0, "Unit": "0"}},
         ],
         "Logging Analog": [
             {"Number": 1, "AD": "A", "Value": {"Value": 12.2, "Unit": "1"}},
@@ -201,6 +203,25 @@ async def test_sensors(hass: HomeAssistant) -> None:
         assert state_o5.attributes.get("state_class") == SensorStateClass.MEASUREMENT
 
         assert entry_o5.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Output5"
+
+        state_o6 = hass.states.get("binary_sensor.node_2_output_6")
+        entry_o6 = entity_registry.async_get("binary_sensor.node_2_output_6")
+
+        assert state_o6.state == STATE_OFF
+        assert state_o6.attributes.get("friendly_name") == "Node: 2 - Output 6"
+        assert state_o6.attributes.get("device_class") is None
+
+        assert entry_o6.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Output6"
+
+        state_o7 = hass.states.get("sensor.node_2_output_7")
+        entry_o7 = entity_registry.async_get("sensor.node_2_output_7")
+
+        assert state_o7.state == "0"
+        assert state_o7.attributes.get("friendly_name") == "Node: 2 - Output 7"
+        assert state_o7.attributes.get("device_class") is None
+        assert state_o7.attributes.get("state_class") == SensorStateClass.MEASUREMENT
+
+        assert entry_o7.unique_id == f"ta-cmi-{conf_entry.entry_id}-2-Output7"
 
         state_al1 = hass.states.get("sensor.analog_1")
         entry_al1 = entity_registry.async_get("sensor.analog_1")

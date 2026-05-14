@@ -4,8 +4,8 @@ from __future__ import annotations
 from typing import Any
 
 from homeassistant.const import CONF_API_VERSION, STATE_OFF, STATE_ON
-from ta_cmi import Channel, ChannelType, Device
 
+from ta_cmi import Channel, ChannelType, Device
 from .const import (
     CONF_CHANNELS,
     CONF_CHANNELS_DEVICE_CLASS,
@@ -67,7 +67,7 @@ class DeviceParser:
         return options
 
     def _get_channel_customization(
-        self, channel_id: int, channel_type: ChannelType
+            self, channel_id: int, channel_type: ChannelType
     ) -> tuple[str | None, str | None]:
         """Get the channel customization."""
         name = None
@@ -108,7 +108,7 @@ class DeviceParser:
 
     @staticmethod
     def _is_channel_binary(channel: Channel) -> bool:
-        return channel.get_unit() == "On/Off" or channel.get_unit() == "No/Yes"
+        return channel.get_unit() == "On/Off" or channel.get_unit() == "No/Yes" or channel.mode == "D"
 
     @staticmethod
     def _format_channel_type(channel_type: ChannelType) -> str:
@@ -116,10 +116,10 @@ class DeviceParser:
         return type_string.title().replace(" ", "-")
 
     def _parse_channels(
-        self,
-        base_data: dict[str, Any],
-        target_channels: dict[int, Channel],
-        channel_type: ChannelType,
+            self,
+            base_data: dict[str, Any],
+            target_channels: dict[int, Channel],
+            channel_type: ChannelType,
     ) -> dict[str, Any]:
         """Parse a channel type."""
 
@@ -132,8 +132,8 @@ class DeviceParser:
             )
 
             if not (
-                (name is not None and self.fetch_mode == "defined")
-                or self.fetch_mode == "all"
+                    (name is not None and self.fetch_mode == "defined")
+                    or self.fetch_mode == "all"
             ):
                 continue
 
