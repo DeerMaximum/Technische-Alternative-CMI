@@ -121,7 +121,7 @@ class DeviceChannelBinary(CoordinatorEntity, BinarySensorEntity):
 
         value: str = channel_raw["value"]
 
-        return value in ("on", "yes")
+        return value in ("on", "yes", 1)
 
     @property
     def device_info(self) -> DeviceInfo:
