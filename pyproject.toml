@@ -37,7 +37,7 @@ dev = [
     "homeassistant==2026.5.1",
     "pytest-homeassistant-custom-component",
     #Fix UnserializableField exception
-    "mashumaro>=3.21",
+    "mashumaro>=3.22",
 ]
 lint = [
     "ruff>=0.14.10"
