@@ -36,6 +36,7 @@ dev = [
     "async_timeout==5.0.1",
     "homeassistant==2026.6.0",
     "pytest-homeassistant-custom-component",
+    "pytest>=6.2.5",
     #Fix UnserializableField exception
     "mashumaro>=3.22",
 ]
