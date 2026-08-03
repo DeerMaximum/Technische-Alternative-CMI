@@ -69,7 +69,7 @@ async def async_setup_entry(
             manufacturer="Technische Alternative",
             name=coordinator.data[ent][DEVICE_TYPE],
             model=coordinator.data[ent][DEVICE_TYPE],
-            sw_version=coordinator.data[ent][CONF_API_VERSION],
+            sw_version=str(coordinator.data[ent][CONF_API_VERSION]),
             configuration_url=coordinator.data[ent][CONF_HOST],
         )
 
