@@ -1,8 +1,11 @@
 # Home Assistant integration to read Values from C.M.I
+
 [![GitHub Release][releases-shield]][releases]
 [![hacs][hacsbadge]][hacs]
 
-This integration monitors the inputs and outputs of the devices connected to a C.M.I. from [Technische Alternative](https://www.ta.co.at/). It creates a separate (binary) sensor for each input and output which displays the current values.
+This integration monitors the inputs and outputs of the devices connected to a C.M.I.
+from [Technische Alternative](https://www.ta.co.at/). It creates a separate (binary) sensor for each input and output
+which displays the current values.
 
 The data is fetched every 10 minutes.
 
@@ -21,7 +24,8 @@ Currently supported devices:
 - UVR67
 
 > **Note**
-> The loading time of the integration is extended by one minute per configured node on the C.M.I. to avoid triggering the rate limit.
+> The loading time of the integration is extended by one minute per configured node on the C.M.I. to avoid triggering
+> the rate limit.
 > The same applies to the setup process
 
 ## Requirements
@@ -29,6 +33,7 @@ Currently supported devices:
 * Credentials for an expert user on the C.M.I.
 
 {% if not installed %}
+
 ## Installation
 
 ### Step 1:
@@ -47,19 +52,20 @@ Currently supported devices:
 
 > **Note**
 > When saving the configuration, there may be a wait time due to the rate limit.
-> 
+>
+
 #### C.M.I. configuration
 
-In the first step of the config flow, set up the connection to C.M.I.. To do this, enter the address, user name and password.
+In the first step of the config flow, set up the connection to C.M.I.. To do this, enter the address, user name and
+password.
 
 #### Device selection
 
-In the 2nd step, select the devices from which the data is to be read.
-For this purpose, a list of all devices and details about them are retrieved at the start of the step.
-This can take several minutes due to a rate limit of one request per minute.
-Once the data has been retrieved, select the supported devices from the list.
-If an error occurs during this query, the devices may be missing from the list. 
-Depending on the type of error, you should try again after a few minutes.
+In the 2nd step, select the devices from which the data is to be read. For this purpose, a list of all devices and
+details about them are retrieved at the start of the step. This can take several minutes due to a rate limit of one
+request per minute. Once the data has been retrieved, select the supported devices from the list. If an error occurs
+during this query, the devices may be missing from the list. Depending on the type of error, you should try again after
+a few minutes.
 
 If to configure the channels individually, continue with the next step, otherwise the setup is finished.
 
@@ -70,35 +76,35 @@ In this step, individual channels can be customized, including the following pro
 * Name of the sensor (can also be changed to HA afterward)
 * Device class
 
-To customize a channel, select the device,
-on which the channel is located, enter the channel number and finally select the channel type.
+To customize a channel, select the device, on which the channel is located, enter the channel number and finally select
+the channel type.
 
 ## Common errors
 
 ### "Unknown error occurred" on setup after ~60s
 
-This error occurs if the setup is done on a Home Assistant instance that is accessed through a reverse proxy or the Home Assistant Cloud. 
-In this case please connect **directly** to your instance and set up the integration.
+This error occurs if the setup is done on a Home Assistant instance that is accessed through a reverse proxy or the Home
+Assistant Cloud. In this case please connect **directly** to your instance and set up the integration.
 
 ## Supported data types
 
 | Device type | Inputs | Outputs | DL-inputs | System-values: General | System-values: Date | System-values: Time | System-values: Sun | System-values: Electrical power | Analog network inputs | Digital network inputs | M-Bus | Modbus | KNX | Analog logging | Digital logging |
 |-------------|:------:|:-------:|:---------:|:----------------------:|:-------------------:|:-------------------:|:------------------:|:-------------------------------:|:---------------------:|:----------------------:|:-----:|:------:|:---:|:--------------:|:---------------:|
-| UVR1611     |   ✔    |    ✔    |     ❌     |           ❌            |          ❌          |          ❌          |         ❌          |                ❌                |           ✔           |           ✔            |   ❌   |   ❌    |  ❌  |       ❌        |        ❌        |
-| UVR16x2     |   ✔    |    ✔    |     ✔     |           ✔            |          ✔          |          ✔          |         ✔          |                ❌                |           ❌           |           ❌            |   ❌   |   ❌    |  ❌  |       ✔        |        ✔        |
-| RSM610      |   ✔    |    ✔    |     ✔     |           ❌            |          ❌          |          ❌          |         ❌          |                ❌                |           ❌           |           ❌            |   ✔   |   ❌    |  ❌  |       ❌        |        ❌        |
-| CAN-I/O45   |   ✔    |    ✔    |     ✔     |           ❌            |          ❌          |          ❌          |         ❌          |                ❌                |           ❌           |           ❌            |   ❌   |   ❌    |  ❌  |       ❌        |        ❌        |
-| CAN-EZ2     |   ✔    |    ✔    |     ❌     |           ❌            |          ❌          |          ❌          |         ❌          |                ✔                |           ❌           |           ❌            |   ❌   |   ❌    |  ❌  |       ❌        |        ❌        |
-| CAN-MTx2    |   ✔    |    ✔    |     ❌     |           ❌            |          ❌          |          ❌          |         ❌          |                ❌                |           ❌           |           ❌            |   ❌   |   ❌    |  ❌  |       ❌        |        ❌        |
-| CAN-BC2     |   ❌    |    ❌    |     ✔     |           ✔            |          ✔          |          ✔          |         ✔          |                ❌                |           ❌           |           ❌            |   ✔   |   ✔    |  ✔  |       ✔        |        ✔        |
-| UVR65       |   ✔    |    ✔    |     ❌     |           ❌            |          ❌          |          ❌          |         ❌          |                ❌                |           ❌           |           ❌            |   ❌   |   ❌    |  ❌  |       ❌        |        ❌        |
-| CAN-EZ3     |   ❌    |    ❌    |     ✔     |           ✔            |          ✔          |          ✔          |         ✔          |                ✔                |           ❌           |           ❌            |   ❌   |   ✔    |  ❌  |       ✔        |        ✔        |
-| UVR610      |   ✔    |    ✔    |     ✔     |           ❌            |          ❌          |          ❌          |         ❌          |                ❌                |           ❌           |           ❌            |   ✔   |   ✔    |  ❌  |       ✔        |        ✔        |
-| UVR67       |   ✔    |    ✔    |     ❌     |           ❌            |          ❌          |          ❌          |         ❌          |                ❌                |           ❌           |           ❌            |   ❌   |   ❌    |  ❌  |       ❌        |        ❌        |
-
+| UVR1611     |   ✔   |   ✔    |    ❌     |           ❌           |         ❌          |         ❌          |         ❌         |               ❌                |          ✔           |           ✔           |  ❌   |   ❌   | ❌  |       ❌       |       ❌        |
+| UVR16x2     |   ✔   |   ✔    |    ✔     |           ✔           |         ✔          |         ✔          |         ✔         |               ❌                |          ❌           |           ❌           |  ❌   |   ❌   | ❌  |       ✔       |       ✔        |
+| RSM610      |   ✔   |   ✔    |    ✔     |           ❌           |         ❌          |         ❌          |         ❌         |               ❌                |          ❌           |           ❌           |  ✔   |   ❌   | ❌  |       ❌       |       ❌        |
+| CAN-I/O45   |   ✔   |   ✔    |    ✔     |           ❌           |         ❌          |         ❌          |         ❌         |               ❌                |          ❌           |           ❌           |  ❌   |   ❌   | ❌  |       ❌       |       ❌        |
+| CAN-EZ2     |   ✔   |   ✔    |    ❌     |           ❌           |         ❌          |         ❌          |         ❌         |               ✔                |          ❌           |           ❌           |  ❌   |   ❌   | ❌  |       ❌       |       ❌        |
+| CAN-MTx2    |   ✔   |   ✔    |    ❌     |           ❌           |         ❌          |         ❌          |         ❌         |               ❌                |          ❌           |           ❌           |  ❌   |   ❌   | ❌  |       ❌       |       ❌        |
+| CAN-BC2     |   ❌   |   ❌    |    ✔     |           ✔           |         ✔          |         ✔          |         ✔         |               ❌                |          ❌           |           ❌           |  ✔   |   ✔   | ✔  |       ✔       |       ✔        |
+| UVR65       |   ✔   |   ✔    |    ❌     |           ❌           |         ❌          |         ❌          |         ❌         |               ❌                |          ❌           |           ❌           |  ❌   |   ❌   | ❌  |       ❌       |       ❌        |
+| CAN-EZ3     |   ❌   |   ❌    |    ✔     |           ✔           |         ✔          |         ✔          |         ✔         |               ✔                |          ❌           |           ❌           |  ❌   |   ✔   | ❌  |       ✔       |       ✔        |
+| UVR610      |   ✔   |   ✔    |    ✔     |           ❌           |         ❌          |         ❌          |         ❌         |               ❌                |          ❌           |           ❌           |  ✔   |   ✔   | ❌  |       ✔       |       ✔        |
+| UVR67       |   ✔   |   ✔    |    ❌     |           ❌           |         ❌          |         ❌          |         ❌         |               ❌                |          ❌           |           ❌           |  ❌   |   ✔   | ✔  |       ❌       |       ❌        |
 
 > **Note**
-> The supported data types may differ from the official API. If a device type supports other data types than listed here, please create an issue.
+> The supported data types may differ from the official API. If a device type supports other data types than listed
+> here, please create an issue.
 
 [taWebsite]: https://www.ta.co.at/
 [hacs]: https://hacs.xyz
