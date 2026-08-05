@@ -41,7 +41,7 @@ dev = [
     "mashumaro>=3.22",
 ]
 lint = [
-    "ruff>=0.14.10"
+    "ruff>=0.16.1"
 ]
 
 [tool.ruff]
@@ -49,6 +49,9 @@ preview = true
 
 [tool.ruff.lint.isort]
 case-sensitive = true
+
+[tool.ruff.lint]
+ignore = ["EXE002"]
 
 [tool.uv]
 default-groups = "all"

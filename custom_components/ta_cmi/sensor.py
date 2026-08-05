@@ -26,7 +26,14 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from ta_cmi import ChannelType
 
 from . import CMIDataUpdateCoordinator
-from .const import DEFAULT_DEVICE_CLASS_MAP, DEVICE_TYPE, DOMAIN, NEW_UID, TYPE_SENSOR, _LOGGER
+from .const import (
+    DEFAULT_DEVICE_CLASS_MAP,
+    DEVICE_TYPE,
+    DOMAIN,
+    NEW_UID,
+    TYPE_SENSOR,
+    _LOGGER,
+)
 
 
 async def async_setup_entry(

@@ -51,7 +51,7 @@ def _async_get_diagnostics(
         data.update(
             devices=[
                 _async_device_as_dict(hass, device_registry, coordinator, device_id)
-                for device_id in coordinator.data.keys()
+                for device_id in coordinator.data
             ]
         )
 

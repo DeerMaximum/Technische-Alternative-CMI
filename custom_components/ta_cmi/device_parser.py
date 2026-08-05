@@ -4,8 +4,8 @@ from __future__ import annotations
 from typing import Any
 
 from homeassistant.const import CONF_API_VERSION, STATE_OFF, STATE_ON
-
 from ta_cmi import Channel, ChannelType, Device
+
 from .const import (
     CONF_CHANNELS,
     CONF_CHANNELS_DEVICE_CLASS,
@@ -126,7 +126,7 @@ class DeviceParser:
         # Dict structure
         # SENSOR_TYPE CHANNEL_TYPE CHANNEL_ID
 
-        for channel_id in target_channels:
+        for channel_id, channel in target_channels.items():
             name, device_class = self._get_channel_customization(
                 channel_id, channel_type
             )
@@ -136,8 +136,6 @@ class DeviceParser:
                     or self.fetch_mode == "all"
             ):
                 continue
-
-            channel: Channel = target_channels[channel_id]
 
             value, unit = self._format_input(target_channel=channel)
 

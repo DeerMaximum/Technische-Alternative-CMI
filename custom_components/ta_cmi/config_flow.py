@@ -20,26 +20,26 @@ from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-
 from ta_cmi import CMI, ApiError, Device, InvalidCredentialsError, RateLimitError
+
 from . import custom_sleep
 from .const import (
-    _LOGGER,
     CONF_CHANNELS,
     CONF_CHANNELS_DEVICE_CLASS,
     CONF_CHANNELS_ID,
     CONF_CHANNELS_NAME,
     CONF_CHANNELS_TYPE,
+    CONF_DEVICES,
     CONF_DEVICE_FETCH_MODE,
     CONF_DEVICE_ID,
     CONF_DEVICE_TYPE,
-    CONF_DEVICES,
     CONF_SCAN_INTERVAL,
     DEVICE_DELAY,
     DEVICE_TYPE_STRING_MAP,
     DOMAIN,
     NEW_UID,
     SCAN_INTERVAL,
+    _LOGGER,
 )
 
 
@@ -99,8 +99,10 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Technische Alternative C.M.I.."""
 
     VERSION = 1
-    override_data: dict[str, Any] = {}
-    override_config: dict[str, Any] = {}
+
+    #For tests
+    override_data: dict[str, Any] = {}  # ruff: ignore[mutable-class-default]
+    override_config: dict[str, Any] = {}  # ruff: ignore[mutable-class-default]
     init_start_time: float = 0
 
     def __init__(self) -> None:
@@ -131,7 +133,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect"
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
-            except Exception as err:  # pylint: disable=broad-except
+            except Exception as err:  # ruff: ignore[blind-except]
                 _LOGGER.exception("Unexpected exception: %s", err)
                 errors["base"] = "unknown"
             else:
@@ -219,7 +221,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
             except RateLimitError:
                 errors["base"] = "rate_limit"
                 break
-            except Exception as err:  # pylint: disable=broad-except
+            except Exception as err:  # ruff: ignore[blind-except]
                 _LOGGER.exception("Unexpected exception: %s", err)
                 errors["base"] = "unknown"
                 break
@@ -361,7 +363,7 @@ class OptionsFlowHandler(OptionsFlow):
                     errors["base"] = "cannot_connect"
                 except InvalidAuth:
                     errors["base"] = "invalid_auth"
-                except Exception as err:  # pylint: disable=broad-except
+                except Exception as err:  # ruff: ignore[blind-except]
                     _LOGGER.exception("Unexpected exception: %s", err)
                     errors["base"] = "unknown"
                 else:

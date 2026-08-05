@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import timedelta
 import time
+from datetime import timedelta
 from typing import Any
 
 from async_timeout import timeout
@@ -15,14 +15,14 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from ta_cmi import CMIAPI, ApiError, Device, InvalidCredentialsError, RateLimitError
 
 from .const import (
-    _LOGGER,
+    CONF_DEVICES,
     CONF_DEVICE_ID,
     CONF_DEVICE_TYPE,
-    CONF_DEVICES,
     CONF_SCAN_INTERVAL,
     DEVICE_DELAY,
     DOMAIN,
     SCAN_INTERVAL,
+    _LOGGER,
 )
 from .device_parser import DeviceParser
 
