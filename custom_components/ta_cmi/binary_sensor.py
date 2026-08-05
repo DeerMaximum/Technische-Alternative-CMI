@@ -22,8 +22,8 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-
 from ta_cmi import ChannelType
+
 from . import CMIDataUpdateCoordinator
 from .const import DEVICE_TYPE, DOMAIN, NEW_UID, TYPE_BINARY, _LOGGER
 

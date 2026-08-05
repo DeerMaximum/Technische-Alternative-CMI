@@ -50,5 +50,8 @@ preview = true
 [tool.ruff.lint.isort]
 case-sensitive = true
 
+[tool.ruff.lint]
+ignore = ["EXE002"]
+
 [tool.uv]
 default-groups = "all"
