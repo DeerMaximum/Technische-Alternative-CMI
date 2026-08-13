@@ -154,7 +154,7 @@ class DeviceChannelSensor(CoordinatorEntity, SensorEntity):
     def device_info(self) -> DeviceInfo:
         """Return device information."""
 
-        device_api_type: str = self._coordinator.data[self._node_id][CONF_API_VERSION]
+        device_api_type: str = str(self._coordinator.data[self._node_id][CONF_API_VERSION])
         device_name: str = self._coordinator.data[self._node_id][DEVICE_TYPE]
 
         return {
