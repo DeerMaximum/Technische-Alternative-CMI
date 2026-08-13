@@ -59,7 +59,7 @@ async def async_setup_entry(
 
                 entities.append(channel)
 
-        if dev := device_registry.async_get_device({(DOMAIN, ent)}):
+        if dev := device_registry.async_get_device_by_identifier((DOMAIN, ent), entry_id):
             _LOGGER.info("Updating device identifiers.")
             device_registry.async_update_device(dev.id, new_identifiers={(DOMAIN, coordinator.data[ent][CONF_HOST], ent)})
 
