@@ -131,7 +131,7 @@ class DeviceChannelSensor(CoordinatorEntity, SensorEntity):
         return value
 
     @property
-    def native_unit_of_measurement(self) -> str:
+    def native_unit_of_measurement(self) -> str | None:
         """Return the unit of measurement of this entity, if any."""
 
         channel_raw: dict[str, Any] = self._coordinator.data[self._node_id][
@@ -140,7 +140,8 @@ class DeviceChannelSensor(CoordinatorEntity, SensorEntity):
 
         unit: str = channel_raw["unit"]
 
-        return unit
+        # An empty string is not "no unit" for HA and breaks the recorder statistics
+        return unit or None
 
     @property
     def state_class(self) -> str:
