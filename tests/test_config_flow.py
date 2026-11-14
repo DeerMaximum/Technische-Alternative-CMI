@@ -241,7 +241,7 @@ async def test_step_user(hass: HomeAssistant) -> None:
     ), patch(
         "ta_cmi.cmi_api.CMIAPI._make_request_get", return_value=DUMMY_DEVICE_API_DATA
     ), patch(
-        "asyncio.sleep", wraps=sleep_mock
+        "custom_components.ta_cmi.clock.sleep", wraps=sleep_mock
     ) as sleep_m:
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": SOURCE_USER}, data=DUMMY_CONNECTION_DATA
@@ -263,7 +263,7 @@ async def test_step_user_only_ip(hass: HomeAssistant) -> None:
     ), patch(
         "ta_cmi.cmi_api.CMIAPI._make_request_get", return_value=DUMMY_DEVICE_API_DATA
     ), patch(
-        "asyncio.sleep", wraps=sleep_mock
+        "custom_components.ta_cmi.clock.sleep", wraps=sleep_mock
     ) as sleep_m:
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": SOURCE_USER}, data=DUMMY_CONNECTION_DATA_ONLY_IP
@@ -287,7 +287,7 @@ async def test_step_user_unkown_device(hass: HomeAssistant) -> None:
         "ta_cmi.cmi_api.CMIAPI._make_request_get",
         return_value=DUMMY_DEVICE_API_DATA_UNKOWN_DEVICE,
     ), patch(
-        "asyncio.sleep", wraps=sleep_mock
+        "custom_components.ta_cmi.clock.sleep", wraps=sleep_mock
     ):
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": SOURCE_USER}, data=DUMMY_CONNECTION_DATA
@@ -301,7 +301,7 @@ async def test_step_user_unkown_device(hass: HomeAssistant) -> None:
 @pytest.mark.asyncio
 async def test_new_uid_flag_set(hass: HomeAssistant) -> None:
     """Test if the config flow sets the new uid flag."""
-    with patch("asyncio.sleep", wraps=sleep_mock):
+    with patch("custom_components.ta_cmi.clock.sleep", wraps=sleep_mock):
         result = await hass.config_entries.flow.async_init(
             DOMAIN,
             context={"source": "devices"},
@@ -317,7 +317,7 @@ async def test_new_uid_flag_set(hass: HomeAssistant) -> None:
 async def test_step_devices_without_edit_fetch_all(hass: HomeAssistant) -> None:
     """Test the device step without edit channels and fetchmode all."""
 
-    with patch("asyncio.sleep", wraps=sleep_mock):
+    with patch("custom_components.ta_cmi.clock.sleep", wraps=sleep_mock):
         result = await hass.config_entries.flow.async_init(
             DOMAIN,
             context={"source": "devices"},
@@ -335,7 +335,7 @@ async def test_step_devices_without_edit_fetch_defined(hass: HomeAssistant) -> N
     dummy_device: Device = Device("2", DUMMY_API)
     DATA_OVERRIDE = {"allDevices": [dummy_device]}
 
-    with patch("asyncio.sleep", wraps=sleep_mock), patch.object(
+    with patch("custom_components.ta_cmi.clock.sleep", wraps=sleep_mock), patch.object(
         ConfigFlow, "override_data", DATA_OVERRIDE
     ):
         result = await hass.config_entries.flow.async_init(
@@ -354,7 +354,7 @@ async def test_step_device_with_device_without_io_support(hass: HomeAssistant) -
     dummy_device: Device = Device("2", DUMMY_API)
     DATA_OVERRIDE = {"allDevices": [dummy_device]}
 
-    with patch("asyncio.sleep", wraps=sleep_mock) as sleep_m, patch(
+    with patch("custom_components.ta_cmi.clock.sleep", wraps=sleep_mock) as sleep_m, patch(
         "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
         side_effect=[
             json.dumps(DUMMY_DEVICE_API_DATA_NO_IO_SUPPORT),
@@ -395,7 +395,7 @@ async def test_step_devices_with_multiple_devices(hass: HomeAssistant) -> None:
     with patch.object(ConfigFlow, "override_data", DATA_OVERRIDE), patch(
         "ta_cmi.cmi_api.CMIAPI._make_request_get",
         return_value=DUMMY_DEVICE_API_DATA_UNKOWN_DEVICE,
-    ), patch("asyncio.sleep", wraps=sleep_mock):
+    ), patch("custom_components.ta_cmi.clock.sleep", wraps=sleep_mock):
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": "devices"}
         )
@@ -424,7 +424,7 @@ async def test_step_devices_with_edit(hass: HomeAssistant) -> None:
 async def test_step_finish_dynamic_wait(hass: HomeAssistant) -> None:
     """Test the finish step with dynamic waiting."""
 
-    with patch("asyncio.sleep", wraps=sleep_mock) as mock, patch.object(
+    with patch("custom_components.ta_cmi.clock.sleep", wraps=sleep_mock) as mock, patch.object(
         ConfigFlow, "init_start_time", time.time()
     ):
         result = await hass.config_entries.flow.async_init(
@@ -446,7 +446,7 @@ async def test_step_device_communication_error(hass: HomeAssistant) -> None:
     with patch(
         "ta_cmi.cmi_api.CMIAPI._make_request_get",
         side_effect=ApiError("Could not connect to C.M.I"),
-    ), patch("asyncio.sleep", wraps=sleep_mock):
+    ), patch("custom_components.ta_cmi.clock.sleep", wraps=sleep_mock):
         result = await hass.config_entries.flow.async_init(
             DOMAIN,
             context={"source": "devices"},
@@ -464,7 +464,7 @@ async def test_step_device_unkown_error(hass: HomeAssistant) -> None:
     with patch(
         "ta_cmi.cmi_api.CMIAPI._make_request_get",
         side_effect=ApiError("Unknown error"),
-    ), patch("asyncio.sleep", wraps=sleep_mock):
+    ), patch("custom_components.ta_cmi.clock.sleep", wraps=sleep_mock):
         result = await hass.config_entries.flow.async_init(
             DOMAIN,
             context={"source": "devices"},
@@ -482,7 +482,7 @@ async def test_step_device_rate_limit_error(hass: HomeAssistant) -> None:
     with patch(
         "ta_cmi.cmi_api.CMIAPI._make_request_get",
         side_effect=RateLimitError("RateLimit"),
-    ), patch("asyncio.sleep", wraps=sleep_mock):
+    ), patch("custom_components.ta_cmi.clock.sleep", wraps=sleep_mock):
         result = await hass.config_entries.flow.async_init(
             DOMAIN,
             context={"source": "devices"},
@@ -509,7 +509,7 @@ async def test_step_channels_edit_only_one(hass: HomeAssistant) -> None:
 
     with patch.object(ConfigFlow, "override_data", DATA_OVERRIDE), patch.object(
         ConfigFlow, "override_config", CONFIG_OVERRIDE
-    ), patch("asyncio.sleep", wraps=sleep_mock):
+    ), patch("custom_components.ta_cmi.clock.sleep", wraps=sleep_mock):
         result = await hass.config_entries.flow.async_init(
             DOMAIN,
             context={"source": "channel"},
@@ -536,7 +536,7 @@ async def test_step_channels_edit_more(hass: HomeAssistant) -> None:
 
     with patch.object(ConfigFlow, "override_data", DATA_OVERRIDE), patch.object(
         ConfigFlow, "override_config", CONFIG_OVERRIDE
-    ), patch("asyncio.sleep", wraps=sleep_mock):
+    ), patch("custom_components.ta_cmi.clock.sleep", wraps=sleep_mock):
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": "channel"}, data=DUMMY_CHANNEL_DATA_OTHER_EDIT
         )
@@ -591,7 +591,7 @@ async def test_options_flow_init(hass: HomeAssistant) -> None:
     ), patch(
         "ta_cmi.cmi_api.CMIAPI._make_request_get", return_value=DUMMY_DEVICE_API_DATA
     ), patch(
-        "asyncio.sleep", wraps=sleep_mock
+        "custom_components.ta_cmi.clock.sleep", wraps=sleep_mock
     ):
         result = await hass.config_entries.options.async_init(config_entry.entry_id)
 

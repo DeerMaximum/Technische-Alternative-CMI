@@ -114,7 +114,7 @@ async def test_sensors(hass: HomeAssistant) -> None:
     ), patch(
         "ta_cmi.cmi_api.CMIAPI.get_device_data", return_value=DUMMY_DEVICE_API_DATA
     ), patch("custom_components.ta_cmi.const.DEVICE_DELAY", 1), patch(
-        "asyncio.sleep", wraps=sleep_mock
+        "custom_components.ta_cmi.clock.sleep", wraps=sleep_mock
     ), patch.object(
         CMIDataUpdateCoordinator, "_coe_sleep_function", sleep_mock
     ):
@@ -317,7 +317,7 @@ async def test_sensors_create_old_id(hass: HomeAssistant) -> None:
     ), patch(
         "ta_cmi.cmi_api.CMIAPI.get_device_data", return_value=DUMMY_DEVICE_API_DATA
     ), patch("custom_components.ta_cmi.const.DEVICE_DELAY", 1), patch(
-        "asyncio.sleep", wraps=sleep_mock
+        "custom_components.ta_cmi.clock.sleep", wraps=sleep_mock
     ), patch.object(
         CMIDataUpdateCoordinator, "_coe_sleep_function", sleep_mock
     ):
@@ -345,7 +345,7 @@ async def test_sensors_invalid_credentials(hass: HomeAssistant) -> None:
     with patch(
         "ta_cmi.cmi_api.CMIAPI._make_request_no_json",
         side_effect=InvalidCredentialsError("Invalid API key"),
-    ), patch("asyncio.sleep", wraps=sleep_mock), patch.object(
+    ), patch("custom_components.ta_cmi.clock.sleep", wraps=sleep_mock), patch.object(
         CMIDataUpdateCoordinator, "_coe_sleep_function", sleep_mock
     ):
         conf_entry: MockConfigEntry = MockConfigEntry(
