@@ -8,3 +8,8 @@ updates:
     directory: "/"
     schedule:
       interval: daily
+    groups:
+      homeassistant:
+        patterns:
+          - "homeassistant"
+          - "pytest-homeassistant"
