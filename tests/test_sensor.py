@@ -9,7 +9,7 @@ from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 from ta_cmi import InvalidCredentialsError
 
 from custom_components.ta_cmi import CMIDataUpdateCoordinator
