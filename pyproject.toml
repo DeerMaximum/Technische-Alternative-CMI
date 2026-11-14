@@ -42,7 +42,7 @@ dev = [
     "mashumaro>=3.22",
 ]
 lint = [
-    "ruff>=0.16.1"
+    "ruff>=0.17.4"
 ]
 
 [tool.pytest.ini_options]
