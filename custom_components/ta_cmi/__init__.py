@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import time
 from datetime import timedelta
+from types import SimpleNamespace
 from typing import Any
 
 from async_timeout import timeout
@@ -28,12 +29,15 @@ from .device_parser import DeviceParser
 
 PLATFORMS: list[str] = [Platform.SENSOR, Platform.BINARY_SENSOR]
 
+# Private clock so tests can patch sleeps without affecting the shared asyncio module.
+clock = SimpleNamespace(sleep=asyncio.sleep)
+
 
 async def custom_sleep(delay: int) -> None:
     """Custom sleep function to prevent Home Assistant from canceling."""
     start = time.time()
     try:
-        await asyncio.sleep(delay)
+        await clock.sleep(delay)
     except asyncio.CancelledError:
         elapsed = time.time() - start
         _LOGGER.debug(
@@ -41,7 +45,7 @@ async def custom_sleep(delay: int) -> None:
             elapsed,
             delay - elapsed,
         )
-        await asyncio.sleep(delay - elapsed)
+        await clock.sleep(delay - elapsed)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

@@ -38,7 +38,7 @@ async def async_setup_entry(
 
     entities: list[DeviceChannelBinary] = []
 
-    entry_id: None | str = None
+    entry_id: str | None = None
 
     if config_entry.data.get(NEW_UID, False):
         entry_id = config_entry.entry_id
