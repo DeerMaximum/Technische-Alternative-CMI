@@ -11,7 +11,7 @@ authors = [
 maintainers = [
     { name = "DeerMaximum", email = "git983456@parabelmail.de" },
 ]
-requires-python = ">=3.14.2"
+requires-python = ">=3.14.9"
 keywords = [
     "homeassistant",
     "c.m.i.",
@@ -34,15 +34,24 @@ repository = "https://github.com/DeerMaximum/Technische-Alternative-CMI"
 dev = [
     "aiohttp_cors~=0.8.1",
     "async_timeout==5.0.1",
-    "homeassistant==2026.9.0",
-    "pytest-homeassistant-custom-component",
-    "pytest>=6.2.5",
+    "homeassistant==2026.11.1",
+    "pytest-homeassistant==2026.11.1",
+    "pytest-cov==7.1.0",
+    "pytest-timeout==2.4.0",
     #Fix UnserializableField exception
     "mashumaro>=3.22",
 ]
 lint = [
     "ruff>=0.16.1"
 ]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+# Let Home Assistant install its httpx alias before respx is imported.
+addopts = "-p no:respx"
+pythonpath = ["."]
+testpaths = ["tests"]
 
 [tool.ruff]
 preview = true
